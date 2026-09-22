@@ -60,13 +60,18 @@ import {
 } from "@/lib/actions/buyers";
 import { getDeals, createDeal, addDealMessage, updateDealStatus, type Deal } from "@/lib/actions/deals";
 import { getDrivers, getShipments } from "@/lib/actions/logistics";
+import { getMaterialPassportsForUser } from "@/lib/actions/passport";
+import { type MaterialPassport } from "@/lib/types";
 import { MapWrapper } from "@/components/MapWrapper";
+import { MaterialPassportModal } from "@/components/MaterialPassportModal";
+import { IndustrialSymbiosisGraph } from "@/components/IndustrialSymbiosisGraph";
 import { createClient } from "@/utils/supabase/client";
+import { QrCode, Navigation, Share2 } from "lucide-react";
 
 export default function BuyerDashboard() {
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams ? searchParams.get("tab") : "overview";
-  const [activeTab, setActiveTab] = useState<"overview" | "requirements" | "marketplace" | "ai-finder" | "deals" | "saved" | "tracking">(
+  const [activeTab, setActiveTab] = useState<"overview" | "requirements" | "marketplace" | "ai-finder" | "deals" | "saved" | "tracking" | "passports" | "symbiosis">(
     (tabFromUrl as any) || "overview"
   );
 
@@ -85,6 +90,8 @@ export default function BuyerDashboard() {
   const [shipments, setShipments] = useState<any[]>([]);
   const [savedListingIds, setSavedListingIds] = useState<string[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [passports, setPassports] = useState<MaterialPassport[]>([]);
+  const [selectedPassport, setSelectedPassport] = useState<MaterialPassport | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Filter mode in marketplace tab
@@ -142,7 +149,7 @@ export default function BuyerDashboard() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
-      const [buyerProfile, incomingReqs, marketWastes, d, s, dReqs, savedIds, dl] = await Promise.all([
+      const [buyerProfile, incomingReqs, marketWastes, d, s, dReqs, savedIds, dl, pass] = await Promise.all([
         getBuyerProfileAndRequirements(),
         getIncomingRequests(),
         getMarketplaceWaste(),
@@ -150,7 +157,8 @@ export default function BuyerDashboard() {
         getShipments("buyer", user?.id),
         getDetailedBuyerRequirements(),
         getSavedListingIds(),
-        getDeals("buyer", user?.id)
+        getDeals("buyer", user?.id),
+        getMaterialPassportsForUser("buyer", user?.id)
       ]);
 
       if (buyerProfile) {
@@ -164,6 +172,7 @@ export default function BuyerDashboard() {
       setDetailedReqs(dReqs);
       setSavedListingIds(savedIds);
       setDeals(dl);
+      setPassports(pass || []);
     } catch (err) {
       console.error("Error loading buyer dashboard:", err);
     } finally {
@@ -401,43 +410,154 @@ export default function BuyerDashboard() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
+      {/* Prototype / Demonstration Notice Badge (Part 17) */}
+      <div className="flex items-center justify-between bg-blue-50 border border-blue-200/80 px-4 py-2 rounded-xl text-xs text-blue-950">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+          <span><strong>Prototype / Demonstration Mode:</strong> Sourcing industrial by-products verified against registered buyer procurement criteria.</span>
+        </div>
+        <span className="text-[10px] uppercase font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
+          CPCB / EPR Compliant
+        </span>
+      </div>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200/80 pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200">
               Procurement & Circular Sourcing
             </span>
             <span className="text-xs font-semibold text-gray-500 flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
               {buyerInfo?.profile?.company_name || "Enterprise Buyer"}
             </span>
           </div>
           <h1 className="text-3xl font-black tracking-tight text-gray-950 mt-2">
-            Recycler & Procurement Portal
+            Buyer Procurement Cockpit
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Source pre-screened industrial scrap, manage technical requirements, run AI natural-language discovery, and negotiate circular supply contracts.
+          <p className="text-xs text-gray-500 mt-1">
+            Source pre-screened industrial by-products, publish technical intake requirements, discover opportunities, and track order logistics.
           </p>
         </div>
 
+        {/* Primary CTA: + POST MATERIAL REQUIREMENT */}
         <div className="flex items-center gap-2.5">
           <button
-            onClick={() => setActiveTab("ai-finder")}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition cursor-pointer"
+            onClick={() => setShowAddReqModal(true)}
+            className="inline-flex items-center gap-2 px-5 py-3 text-xs font-black text-white bg-blue-600 hover:bg-blue-700 rounded-2xl shadow-lg shadow-blue-600/30 transition-all duration-200 active:scale-95 cursor-pointer"
           >
-            <Sparkles className="w-4 h-4 text-emerald-200" />
-            AI Match Finder
+            <Plus className="w-4 h-4" />
+            <span>+ POST MATERIAL REQUIREMENT</span>
           </button>
-
-          <Link
-            href="/buyer/requests"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 text-xs font-bold transition shadow-xs"
-          >
-            <Inbox className="w-4 h-4 text-emerald-600" />
-            Proposals ({pendingRequests.length})
-          </Link>
         </div>
+      </div>
+
+      {/* Buyer Quick Action Cards Strip (Part 15) */}
+      <div className="bg-gradient-to-r from-blue-950 via-slate-950 to-green-950 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-blue-800/40">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-blue-400 font-bold block mb-2.5">
+          Buyer Quick Actions
+        </span>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+          <button
+            onClick={() => setShowAddReqModal(true)}
+            className="p-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex flex-col items-center text-center gap-1.5 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Post Requirement</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("marketplace")}
+            className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-blue-200 font-semibold text-xs flex flex-col items-center text-center gap-1.5 transition-colors"
+          >
+            <Search className="w-4 h-4" />
+            <span>Find Materials</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("ai-finder")}
+            className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-blue-200 font-semibold text-xs flex flex-col items-center text-center gap-1.5 transition-colors"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>AI Material Discovery</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("ai-finder")}
+            className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-blue-200 font-semibold text-xs flex flex-col items-center text-center gap-1.5 transition-colors"
+          >
+            <Share2 className="w-4 h-4" />
+            <span>Recommended Matches</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("tracking")}
+            className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-blue-200 font-semibold text-xs flex flex-col items-center text-center gap-1.5 transition-colors"
+          >
+            <Truck className="w-4 h-4" />
+            <span>Track Orders</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Buyer Primary Workflow Strip */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs overflow-x-auto">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-gray-400 font-bold block mb-2">
+          Circular Procurement Workflow Pipeline
+        </span>
+        <div className="flex items-center gap-2 min-w-max">
+          {[
+            { step: 1, label: 'Create Requirement', tab: 'requirements' },
+            { step: 2, label: 'Find Materials', tab: 'marketplace' },
+            { step: 3, label: 'AI Discovery', tab: 'ai-finder' },
+            { step: 4, label: 'Recommended Matches', tab: 'ai-finder' },
+            { step: 5, label: 'Compare Opportunities', tab: 'marketplace' },
+            { step: 6, label: 'Negotiate & Order', tab: 'deals' },
+            { step: 7, label: 'Shipment', tab: 'tracking' },
+            { step: 8, label: 'Delivery & Passport', tab: 'passports' }
+          ].map((item, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <button
+                onClick={() => setActiveTab(item.tab as any)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
+                  activeTab === item.tab
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-700 hover:bg-blue-50 hover:text-blue-800'
+                }`}
+              >
+                <span className="w-4 h-4 rounded-full bg-blue-500/20 text-blue-900 flex items-center justify-center text-[10px]">
+                  {item.step}
+                </span>
+                <span>{item.label}</span>
+              </button>
+              {idx < 7 && <ArrowRight className="w-3.5 h-3.5 text-gray-300 shrink-0" />}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Top Tab Bar Navigation */}
+      <div className="flex border-b border-gray-200 gap-2 overflow-x-auto text-xs font-bold">
+        {[
+          { id: "overview", label: "Dashboard Overview" },
+          { id: "requirements", label: `My Requirements (${detailedReqs.length})` },
+          { id: "marketplace", label: `Material Marketplace (${wasteListings.length})` },
+          { id: "ai-finder", label: "AI Match Discovery" },
+          { id: "deals", label: `Orders & Deals (${deals.length})` },
+          { id: "saved", label: `Saved Listings (${savedListingIds.length})` },
+          { id: "passports", label: `Material Passports (${passports.length})` },
+          { id: "symbiosis", label: "Industrial Symbiosis" },
+          { id: "tracking", label: "Inbound Tracking" }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`pb-3 px-3.5 border-b-2 whitespace-nowrap transition-colors ${
+              activeTab === tab.id
+                ? 'border-blue-600 text-blue-700 font-black'
+                : 'border-transparent text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
 
@@ -1281,6 +1401,96 @@ export default function BuyerDashboard() {
       )}
 
       {/* ------------------------------------------------------------- */}
+      {/* TAB: DIGITAL MATERIAL PASSPORTS (DPP) */}
+      {/* ------------------------------------------------------------- */}
+      {activeTab === "passports" && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-xs">
+            <div>
+              <h2 className="text-xl font-bold text-gray-950">Procured Material Passports (DPP)</h2>
+              <p className="text-xs text-gray-500 mt-1">
+                Verified digital dossiers, ESG life cycle compliance certificates, and cryptographic custody verification.
+              </p>
+            </div>
+            <span className="text-xs text-blue-700 font-bold bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+              DPP Standard V2 Verified
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {passports.map((p) => (
+              <div key={p.id} className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                      {p.id}
+                    </span>
+                    <span className="text-[10px] text-gray-400">Batch: {p.batchNumber}</span>
+                  </div>
+
+                  <h3 className="text-base font-bold text-gray-950 mt-2">{p.materialName}</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Generator: <strong>{p.originCompany}</strong> ({p.originLocation})
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Quantity: <strong>{p.quantity.toLocaleString()} {p.unit}</strong> • Category: {p.category}
+                  </p>
+
+                  <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-gray-100 text-center">
+                    <div className="p-2 rounded-lg bg-emerald-50">
+                      <span className="text-[9px] uppercase font-bold text-emerald-700 block">Circularity</span>
+                      <span className="text-xs font-black text-emerald-800">{p.circularityScore}/100</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-blue-50">
+                      <span className="text-[9px] uppercase font-bold text-blue-700 block">Purity</span>
+                      <span className="text-xs font-black text-blue-800">{p.purityPercentage}%</span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-teal-50">
+                      <span className="text-[9px] uppercase font-bold text-teal-700 block">CO2 Avoided</span>
+                      <span className="text-xs font-black text-teal-800">{Math.round(p.co2AvoidedKg / 1000)} T</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-gray-100 flex gap-2">
+                  <button
+                    onClick={() => setSelectedPassport(p)}
+                    className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <QrCode className="w-3.5 h-3.5" />
+                    <span>View QR & Passport</span>
+                  </button>
+                  <Link
+                    href={`/passport/${p.id}`}
+                    target="_blank"
+                    className="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600"
+                    title="Open public certificate page"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
+      {/* TAB: INDUSTRIAL SYMBIOSIS NETWORK */}
+      {/* ------------------------------------------------------------- */}
+      {activeTab === "symbiosis" && (
+        <div className="space-y-6">
+          <IndustrialSymbiosisGraph
+            role="buyer"
+            onInitiateConnection={(node) => {
+              setSearchQuery(node.materialsSupplied[0] || "");
+              setActiveTab("marketplace");
+            }}
+          />
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------- */}
       {/* MODAL: ADD DETAILED SPECIFICATION */}
       {/* ------------------------------------------------------------- */}
       {showAddReqModal && (
@@ -1664,6 +1874,12 @@ export default function BuyerDashboard() {
           </motion.div>
         </div>
       )}
+
+      {/* Material Passport Modal */}
+      <MaterialPassportModal
+        passport={selectedPassport}
+        onClose={() => setSelectedPassport(null)}
+      />
     </div>
   );
 }

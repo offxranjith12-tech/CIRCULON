@@ -63,7 +63,7 @@ export default async function RootLayout({
               <Sidebar role={role} userEmail={user?.email} />
             </Suspense>
             <div className="flex-1 overflow-y-auto w-full bg-gray-50">
-              <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+              <main className="max-w-7xl mx-auto p-4 pt-16 sm:p-6 lg:p-8">
                 {children}
               </main>
             </div>

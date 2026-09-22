@@ -44,14 +44,15 @@ export interface Shipment {
 export interface MapProps {
   shipments: Shipment[];
   drivers: Driver[];
+  className?: string;
 }
 
-export default function Map({ shipments, drivers }: MapProps) {
+export default function Map({ shipments, drivers, className }: MapProps) {
   // Center of India
   const center: [number, number] = [20.5937, 78.9629];
 
   return (
-    <div className="h-[500px] w-full rounded-lg overflow-hidden shadow-lg border border-border">
+    <div className={`h-[500px] w-full rounded-lg overflow-hidden shadow-lg border border-border ${className || ''}`}>
       <MapContainer center={center} zoom={5} scrollWheelZoom={true} className="h-full w-full relative z-0">
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

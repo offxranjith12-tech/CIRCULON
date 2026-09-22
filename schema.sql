@@ -192,6 +192,14 @@ CREATE TABLE IF NOT EXISTS public.shipments (
   dropoff_lat NUMERIC,
   dropoff_lng NUMERIC,
   status TEXT DEFAULT 'assigned' CHECK (status IN ('assigned', 'in_transit', 'delivered')),
+  status_step TEXT DEFAULT 'ASSIGNED' CHECK (status_step IN ('ASSIGNED', 'START_TRIP', 'AT_PICKUP', 'PICKED_UP', 'IN_TRANSIT', 'AT_DELIVERY', 'DELIVERED', 'COMPLETED')),
+  delivery_proof_url TEXT,
+  weighbridge_slip TEXT,
+  recipient_signature TEXT,
+  delivery_notes TEXT,
+  distance_km NUMERIC,
+  freight_cost NUMERIC,
+  co2_freight_emissions_kg NUMERIC,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -204,6 +212,79 @@ CREATE TABLE IF NOT EXISTS public.reports (
   reason TEXT NOT NULL,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'investigating', 'resolved', 'dismissed')),
   admin_notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 13. Digital Material Passports (DPP)
+CREATE TABLE IF NOT EXISTS public.material_passports (
+  id TEXT PRIMARY KEY,
+  waste_id UUID REFERENCES public.waste_materials(id) ON DELETE CASCADE,
+  deal_id UUID REFERENCES public.deals(id) ON DELETE SET NULL,
+  batch_number TEXT NOT NULL,
+  material_name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  quantity NUMERIC NOT NULL,
+  unit TEXT DEFAULT 'KG',
+  origin_location TEXT NOT NULL,
+  origin_company TEXT NOT NULL,
+  seller_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  buyer_company TEXT,
+  buyer_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  quality_score NUMERIC DEFAULT 85,
+  purity_percentage NUMERIC DEFAULT 90,
+  circularity_score NUMERIC DEFAULT 92,
+  co2_avoided_kg NUMERIC DEFAULT 0,
+  landfill_diverted_kg NUMERIC DEFAULT 0,
+  water_saved_liters NUMERIC DEFAULT 0,
+  qr_payload_url TEXT,
+  certificate_hash TEXT NOT NULL,
+  custody_timeline JSONB DEFAULT '[]'::jsonb,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 14. Product Valorization Recommendations
+CREATE TABLE IF NOT EXISTS public.product_recommendations (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  waste_id UUID REFERENCES public.waste_materials(id) ON DELETE CASCADE,
+  product_name TEXT NOT NULL,
+  recovered_material TEXT NOT NULL,
+  why_suitable TEXT NOT NULL,
+  required_processing JSONB DEFAULT '[]'::jsonb,
+  approximate_feasibility NUMERIC DEFAULT 85,
+  required_quality TEXT,
+  potential_industry TEXT,
+  potential_buyer_category TEXT,
+  estimated_value_min NUMERIC,
+  estimated_value_max NUMERIC,
+  economic_ranking_score NUMERIC,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 15. Industrial Symbiosis Links
+CREATE TABLE IF NOT EXISTS public.industrial_symbiosis_links (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  source_company TEXT NOT NULL,
+  target_company TEXT NOT NULL,
+  material_name TEXT NOT NULL,
+  annual_volume_kg NUMERIC NOT NULL,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'potential', 'negotiating')),
+  co2_offset_kg NUMERIC,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 16. Market Opportunities
+CREATE TABLE IF NOT EXISTS public.market_opportunities (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  material_name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  demand_kg NUMERIC NOT NULL,
+  available_supply_kg NUMERIC NOT NULL,
+  potential_buyers_count INTEGER DEFAULT 1,
+  preferred_price_min NUMERIC,
+  preferred_price_max NUMERIC,
+  opportunity_level TEXT DEFAULT 'HIGH' CHECK (opportunity_level IN ('HIGH', 'MODERATE', 'EMERGING')),
+  urgency TEXT DEFAULT 'Immediate',
+  data_source TEXT DEFAULT 'Based on CIRCULON buyer requirements',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -220,6 +301,10 @@ ALTER TABLE public.deals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.deal_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shipments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.material_passports ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.product_recommendations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.industrial_symbiosis_links ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.market_opportunities ENABLE ROW LEVEL SECURITY;
 
 -- Basic RLS Policies
 CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
@@ -241,6 +326,13 @@ CREATE POLICY "Parties can view deal messages" ON public.deal_messages FOR SELEC
 );
 CREATE POLICY "Parties can insert deal messages" ON public.deal_messages FOR INSERT WITH CHECK (auth.uid() = sender_id);
 
+CREATE POLICY "Public can view verified passports" ON public.material_passports FOR SELECT USING (true);
+CREATE POLICY "Sellers can manage passports" ON public.material_passports FOR ALL USING (auth.uid() = seller_id);
+
+CREATE POLICY "Anyone can view market opportunities" ON public.market_opportunities FOR SELECT USING (true);
+CREATE POLICY "Anyone can view symbiosis links" ON public.industrial_symbiosis_links FOR SELECT USING (true);
+
 -- Storage buckets
 INSERT INTO storage.buckets (id, name, public) VALUES ('material-images', 'material-images', true) ON CONFLICT DO NOTHING;
 INSERT INTO storage.buckets (id, name, public) VALUES ('id-proofs', 'id-proofs', true) ON CONFLICT DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('delivery-proofs', 'delivery-proofs', true) ON CONFLICT DO NOTHING;

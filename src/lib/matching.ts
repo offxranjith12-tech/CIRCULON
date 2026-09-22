@@ -1,9 +1,15 @@
+import { 
+  calculateRealLogistics, 
+  calculateNetCircularValue 
+} from '@/lib/logistics';
+import { type LogisticsDetails, type NetCircularValue } from '@/lib/types';
+
 export interface CompatibilityBreakdown {
   material: number;
   quantity: number;
-  location: number;
   quality: number;
   price: number;
+  location: number;
   industry: number;
 }
 
@@ -16,11 +22,17 @@ export interface MatchResult {
   transportCost: number;
   processingCost: number;
   netValue: number;
+  netCircularValue: NetCircularValue;
+  logistics: LogisticsDetails;
+  whyThisBuyer: Array<{
+    factor: string;
+    score: number;
+    description: string;
+    passed: boolean;
+  }>;
   reason: string[];
   disclaimer: string;
 }
-
-const TRANSPORT_RATE = 35; // ₹35 per km
 
 export const calculateMatches = (
   materialType: string,
@@ -37,19 +49,19 @@ export const calculateMatches = (
   const matLower = (materialType || '').toLowerCase();
   const qualityGiven = (wasteDetails?.quality || 'High').toLowerCase();
   const sellerExpectedPrice = wasteDetails?.expectedPrice || 0;
-  const sellerLocation = (wasteDetails?.location || '').toLowerCase();
+  const sellerLocation = wasteDetails?.location || 'Tirupur, Tamil Nadu';
+  const category = wasteDetails?.category || 'General Industrial Waste';
 
   for (const buyer of buyers) {
     const requiredMaterials: string[] = buyer.materials_required || [];
     
-    // Check material compatibility
+    // Check material compatibility (0-100)
     let materialScore = 0;
     const isDirectMatch = requiredMaterials.some((req: string) => {
       const r = req.toLowerCase();
       return matLower.includes(r) || r.includes(matLower);
     });
 
-    // Synonym & stream compatibility checks
     const isRelatedMatch = 
       (matLower.includes('cotton') && requiredMaterials.some(r => r.toLowerCase().includes('textile') || r.toLowerCase().includes('cotton') || r.toLowerCase().includes('yarn'))) ||
       (matLower.includes('textile') && requiredMaterials.some(r => r.toLowerCase().includes('fabric') || r.toLowerCase().includes('cotton') || r.toLowerCase().includes('yarn'))) ||
@@ -60,16 +72,15 @@ export const calculateMatches = (
       (matLower.includes('aluminium') && requiredMaterials.some(r => r.toLowerCase().includes('metal') || r.toLowerCase().includes('scrap'))) ||
       (matLower.includes('paper') && requiredMaterials.some(r => r.toLowerCase().includes('cardboard') || r.toLowerCase().includes('kraft') || r.toLowerCase().includes('occ'))) ||
       (matLower.includes('cardboard') && requiredMaterials.some(r => r.toLowerCase().includes('paper') || r.toLowerCase().includes('packaging'))) ||
-      (matLower.includes('rice') || matLower.includes('bagasse') || matLower.includes('coir')) && requiredMaterials.some(r => r.toLowerCase().includes('biomass') || r.toLowerCase().includes('agricultural'));
+      ((matLower.includes('rice') || matLower.includes('bagasse') || matLower.includes('coir')) && requiredMaterials.some(r => r.toLowerCase().includes('biomass') || r.toLowerCase().includes('agricultural')));
 
     if (isDirectMatch) {
-      materialScore = 100;
+      materialScore = 95;
     } else if (isRelatedMatch) {
-      materialScore = 85;
+      materialScore = 88;
     } else {
-      // General fallback if buyer is an aggregator
       if (buyer.industry?.toLowerCase().includes('recycl') || buyer.buyer_type?.toLowerCase().includes('aggregator')) {
-        materialScore = 65;
+        materialScore = 70;
       } else {
         continue; // No compatibility
       }
@@ -80,11 +91,11 @@ export const calculateMatches = (
     const minQ = Number(buyer.min_quantity) || 100;
     const maxQ = Number(buyer.max_quantity) || 10000;
     if (quantity >= minQ && quantity <= maxQ) {
-      quantityScore = 95;
+      quantityScore = 100;
     } else if (quantity > maxQ) {
-      quantityScore = 80;
+      quantityScore = 85;
     } else {
-      quantityScore = Math.max(50, Math.round((quantity / minQ) * 75));
+      quantityScore = Math.max(50, Math.round((quantity / minQ) * 80));
     }
 
     // 2. Price compatibility (0-100)
@@ -92,72 +103,107 @@ export const calculateMatches = (
     let priceScore = 85;
     if (sellerExpectedPrice > 0) {
       if (sellerExpectedPrice <= buyerMaxPrice) {
-        priceScore = 95;
+        priceScore = 92;
       } else {
         const ratio = buyerMaxPrice / sellerExpectedPrice;
         priceScore = Math.max(45, Math.min(90, Math.round(ratio * 90)));
       }
     } else {
-      priceScore = buyerMaxPrice >= 30 ? 92 : 84;
+      priceScore = 88;
     }
 
     // 3. Quality compatibility (0-100)
     let qualityScore = 90;
     const prefQuality = (buyer.preferred_quality || 'High').toLowerCase();
     if (qualityGiven.includes('high') || qualityGiven.includes('clean')) {
-      qualityScore = 95;
+      qualityScore = 94;
     } else if (qualityGiven.includes('medium')) {
-      qualityScore = prefQuality.includes('high') ? 80 : 92;
+      qualityScore = prefQuality.includes('high') ? 82 : 91;
     } else {
-      qualityScore = 70;
+      qualityScore = 72;
     }
 
-    // 4. Location / Distance compatibility (0-100)
-    let locationScore = 85;
-    const buyerState = (buyer.state || '').toLowerCase();
-    const buyerCity = (buyer.city || '').toLowerCase();
-    if (sellerLocation && (sellerLocation.includes(buyerState) || sellerLocation.includes(buyerCity))) {
-      locationScore = 95;
-    } else {
-      locationScore = 80;
-    }
-
-    // 5. Industry compatibility (0-100)
+    // 4. Industry compatibility (0-100)
     let industryScore = 90;
     const buyerIndustry = (buyer.industry || '').toLowerCase();
     if (matLower.includes('cotton') && buyerIndustry.includes('textile')) industryScore = 98;
     else if ((matLower.includes('plastic') || matLower.includes('hdpe')) && (buyerIndustry.includes('plastic') || buyerIndustry.includes('polymer'))) industryScore = 98;
     else if (matLower.includes('metal') && (buyerIndustry.includes('metal') || buyerIndustry.includes('steel'))) industryScore = 98;
-    else industryScore = 85;
+    else industryScore = 88;
 
-    // Weighted Overall Compatibility Score
-    // Material 30%, Quantity 20%, Price 15%, Quality 15%, Location 10%, Industry 10%
+    // 5. Location / Logistics calculation
+    const buyerLocation = `${buyer.city || ''}, ${buyer.state || ''}`.trim() || 'Coimbatore, Tamil Nadu';
+    const logistics = calculateRealLogistics(sellerLocation, buyerLocation, quantity, category);
+
+    // Location compatibility based on real calculated distance
+    let locationScore = 85;
+    if (logistics.distanceKm <= 50) {
+      locationScore = 96;
+    } else if (logistics.distanceKm <= 150) {
+      locationScore = 88;
+    } else if (logistics.distanceKm <= 350) {
+      locationScore = 78;
+    } else {
+      locationScore = 65;
+    }
+
+    // Weighted Overall Opportunity Score
+    // Material 30%, Quantity 20%, Quality 15%, Price 15%, Location 10%, Industry 10%
     const overallScore = Math.round(
       materialScore * 0.30 +
       quantityScore * 0.20 +
-      priceScore * 0.15 +
       qualityScore * 0.15 +
+      priceScore * 0.15 +
       locationScore * 0.10 +
       industryScore * 0.10
     );
 
-    // Financial calculations
-    const offeredPrice = buyer.max_price || 30;
+    // Financial & Net Circular Value calculations
+    const offeredPrice = buyer.max_price || sellerExpectedPrice || 32;
     const grossValue = quantity * offeredPrice;
-    const mockDistance = locationScore >= 90 ? 35 : 75;
-    const transportCost = mockDistance * TRANSPORT_RATE;
-    const processingCost = 0;
-    const netValue = Math.max(0, grossValue - transportCost - processingCost);
+    const netCircularVal = calculateNetCircularValue(grossValue, logistics.estimatedFreightCost, quantity, category);
 
-    // Reasons breakdown
-    const reasons: string[] = [];
-    if (materialScore >= 90) reasons.push('Direct material specification match');
-    else reasons.push('Related circular feedstock match');
+    // Transparent "Why This Buyer?" Explainability Breakdown
+    const whyThisBuyer = [
+      {
+        factor: 'Material Compatibility',
+        score: materialScore,
+        description: isDirectMatch ? 'Direct stream match with buyer procurement requirement' : 'Cross-industry circular feedstock substitute',
+        passed: materialScore >= 80
+      },
+      {
+        factor: 'Quantity Fit',
+        score: quantityScore,
+        description: `Batch size (${quantity.toLocaleString()} KG) fits buyer intake bracket (${minQ.toLocaleString()}–${maxQ.toLocaleString()} KG)`,
+        passed: quantityScore >= 75
+      },
+      {
+        factor: 'Quality Fit',
+        score: qualityScore,
+        description: `Offered condition matches buyer preference (${buyer.preferred_quality || 'Commercial Grade'})`,
+        passed: qualityScore >= 80
+      },
+      {
+        factor: 'Price Fit',
+        score: priceScore,
+        description: `Expected price aligned with buyer ceiling of ₹${buyerMaxPrice}/KG`,
+        passed: priceScore >= 75
+      },
+      {
+        factor: 'Logistics & Proximity',
+        score: locationScore,
+        description: `${logistics.distanceKm} KM road distance between ${sellerLocation} and ${buyerLocation}`,
+        passed: locationScore >= 70
+      }
+    ];
 
-    if (quantityScore >= 90) reasons.push(`Batch matches buyer intake limit (${minQ.toLocaleString()} - ${maxQ.toLocaleString()} KG)`);
-    if (locationScore >= 90) reasons.push('Proximity logistics match (under 50 KM)');
-    if (priceScore >= 90) reasons.push(`Strong price point up to ₹${offeredPrice}/KG`);
-    if (qualityScore >= 90) reasons.push('Quality condition meets procurement grade');
+    const reasons = [
+      `Material compatibility: ${materialScore}%`,
+      `Quantity fit: ${quantityScore}%`,
+      `Quality fit: ${qualityScore}%`,
+      `Price fit: ${priceScore}%`,
+      `Logistics proximity: ${locationScore}% (${logistics.distanceKm} KM)`
+    ];
 
     matches.push({
       buyer,
@@ -166,20 +212,23 @@ export const calculateMatches = (
       breakdown: {
         material: materialScore,
         quantity: quantityScore,
-        location: locationScore,
         quality: qualityScore,
         price: priceScore,
+        location: locationScore,
         industry: industryScore,
       },
       grossValue,
-      transportCost,
-      processingCost,
-      netValue,
+      transportCost: logistics.estimatedFreightCost,
+      processingCost: netCircularVal.estimatedProcessingCost,
+      netValue: netCircularVal.netValue,
+      netCircularValue: netCircularVal,
+      logistics,
+      whyThisBuyer,
       reason: reasons,
-      disclaimer: 'Compatibility score is an algorithmic estimate based on buyer criteria and material profile, not a contractual guarantee.',
+      disclaimer: 'Opportunity score and Net Circular Value are derived from deterministic transportation and pre-processing cost algorithms based on actual buyer procurement specifications.'
     });
   }
 
-  // Sort descending by compatibility score
-  return matches.sort((a, b) => b.compatibilityScore - a.compatibilityScore);
+  // Sort descending by opportunity score
+  return matches.sort((a, b) => b.opportunityScore - a.opportunityScore);
 };

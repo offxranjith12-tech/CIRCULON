@@ -57,6 +57,7 @@ export async function updateSession(request: NextRequest) {
                            pathname.startsWith('/waste') ||
                            pathname.startsWith('/buyer') ||
                            pathname.startsWith('/admin') ||
+                           pathname.startsWith('/driver') ||
                            pathname.startsWith('/matches') ||
                            pathname.startsWith('/settings');
 
@@ -76,7 +77,17 @@ export async function updateSession(request: NextRequest) {
 
       const userRole = profile?.role || 
                        user.user_metadata?.role || 
-                       (user.email?.toLowerCase().includes('admin') ? 'admin' : 'seller');
+                       (user.email?.toLowerCase().includes('admin') ? 'admin' : 
+                        user.email?.toLowerCase().includes('driver') ? 'driver' : 
+                        user.email?.toLowerCase().includes('buyer') ? 'buyer' : 'seller');
+
+      // Helper to redirect to appropriate user dashboard
+      const getRoleDashboard = (role: string) => {
+        if (role === 'admin') return '/admin';
+        if (role === 'buyer') return '/buyer';
+        if (role === 'driver') return '/driver';
+        return '/dashboard';
+      };
 
       // 1. Account approval gate
       if (profile && profile.approval_status === 'pending' && userRole !== 'admin') {
@@ -90,24 +101,32 @@ export async function updateSession(request: NextRequest) {
       // 2. Admin portal route protection: strictly admin only
       if (pathname.startsWith('/admin') && userRole !== 'admin') {
         const url = request.nextUrl.clone();
-        url.pathname = userRole === 'buyer' ? '/buyer' : '/dashboard';
+        url.pathname = getRoleDashboard(userRole);
         return NextResponse.redirect(url);
       }
 
-      // 3. Buyer route protection: sellers cannot access buyer routes
-      if (pathname.startsWith('/buyer') && userRole === 'seller') {
+      // 3. Driver route protection: driver only (admin allowed)
+      if (pathname.startsWith('/driver') && userRole !== 'driver' && userRole !== 'admin') {
         const url = request.nextUrl.clone();
-        url.pathname = '/dashboard';
+        url.pathname = getRoleDashboard(userRole);
         return NextResponse.redirect(url);
       }
 
-      // 4. Seller route protection: buyers cannot access seller waste & CRM routes
+      // 4. Buyer route protection: buyers only (admin allowed)
+      if (pathname.startsWith('/buyer') && userRole !== 'buyer' && userRole !== 'admin') {
+        const url = request.nextUrl.clone();
+        url.pathname = getRoleDashboard(userRole);
+        return NextResponse.redirect(url);
+      }
+
+      // 5. Seller route protection: sellers only (admin allowed)
       const isSellerOnlyRoute = pathname.startsWith('/dashboard') || 
                                 pathname.startsWith('/waste') || 
-                                pathname.startsWith('/buyers');
-      if (isSellerOnlyRoute && userRole === 'buyer') {
+                                pathname.startsWith('/buyers') ||
+                                pathname.startsWith('/matches');
+      if (isSellerOnlyRoute && userRole !== 'seller' && userRole !== 'admin') {
         const url = request.nextUrl.clone();
-        url.pathname = '/buyer';
+        url.pathname = getRoleDashboard(userRole);
         return NextResponse.redirect(url);
       }
     } catch {
