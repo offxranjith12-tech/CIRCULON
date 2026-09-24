@@ -288,6 +288,28 @@ CREATE TABLE IF NOT EXISTS public.market_opportunities (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 17. Messages (Direct user-to-user)
+CREATE TABLE IF NOT EXISTS public.messages (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  sender_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  receiver_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  message TEXT NOT NULL,
+  read BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 18. Notifications
+CREATE TABLE IF NOT EXISTS public.notifications (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  link TEXT,
+  read BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- Enable RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.waste_materials ENABLE ROW LEVEL SECURITY;
@@ -305,6 +327,8 @@ ALTER TABLE public.material_passports ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.product_recommendations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.industrial_symbiosis_links ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.market_opportunities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- Basic RLS Policies
 CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
@@ -331,6 +355,14 @@ CREATE POLICY "Sellers can manage passports" ON public.material_passports FOR AL
 
 CREATE POLICY "Anyone can view market opportunities" ON public.market_opportunities FOR SELECT USING (true);
 CREATE POLICY "Anyone can view symbiosis links" ON public.industrial_symbiosis_links FOR SELECT USING (true);
+
+CREATE POLICY "Users can view their own messages" ON public.messages FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = receiver_id);
+CREATE POLICY "Users can insert messages" ON public.messages FOR INSERT WITH CHECK (auth.uid() = sender_id);
+CREATE POLICY "Users can update their received messages" ON public.messages FOR UPDATE USING (auth.uid() = receiver_id);
+
+CREATE POLICY "Users can view their own notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert notifications" ON public.notifications FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update their own notifications" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
 
 -- Storage buckets
 INSERT INTO storage.buckets (id, name, public) VALUES ('material-images', 'material-images', true) ON CONFLICT DO NOTHING;

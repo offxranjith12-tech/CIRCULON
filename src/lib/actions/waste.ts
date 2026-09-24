@@ -194,9 +194,11 @@ export async function getWasteMaterials(): Promise<WasteMaterial[]> {
       .eq('seller_id', user.id)
       .order('created_at', { ascending: false });
 
-    if (error || !data || data.length === 0) {
-      return localUserListings;
+    if (error) {
+      console.error('Error fetching waste materials:', error);
+      return [];
     }
+    if (!data) return [];
 
     return data.map((d: any) => ({
       ...d,
@@ -205,7 +207,8 @@ export async function getWasteMaterials(): Promise<WasteMaterial[]> {
       status: d.status || 'active',
     }));
   } catch (err) {
-    return localUserListings;
+    console.error('Exception in getWasteMaterials:', err);
+    return [];
   }
 }
 
@@ -349,18 +352,13 @@ export async function getMarketplaceWaste(): Promise<WasteMaterial[]> {
       .in('status', ['active', 'matched'])
       .order('created_at', { ascending: false });
 
-    if (!error && data && data.length > 0) {
-      // Merge with default marketplace waste if few listings
-      const merged = [...data];
-      DEFAULT_MARKETPLACE_WASTE.forEach(dw => {
-        if (!merged.some(m => m.id === dw.id || m.material_name?.toLowerCase() === dw.material_name.toLowerCase())) {
-          merged.push(dw);
-        }
-      });
-      return merged;
+    if (error) {
+      console.error('Error fetching marketplace waste:', error);
+      return [];
     }
-    return DEFAULT_MARKETPLACE_WASTE;
+    return data || [];
   } catch (err) {
-    return DEFAULT_MARKETPLACE_WASTE;
+    console.error('Exception in getMarketplaceWaste:', err);
+    return [];
   }
 }

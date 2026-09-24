@@ -46,6 +46,7 @@ import {
   DollarSign
 } from "lucide-react";
 import { logout } from "@/app/login/actions";
+import { NotificationBell } from "./NotificationBell";
 
 interface SidebarProps {
   role: string;
@@ -160,6 +161,7 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
     {
       heading: "SYSTEM",
       items: [
+        { name: "Messages", href: "/messages", icon: MessageSquare },
         { name: "Notifications", href: "/admin?tab=notifications", tab: "notifications", icon: Bell },
         { name: "Settings", href: "/settings", icon: Settings }
       ]
@@ -221,6 +223,7 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
     {
       heading: "SYSTEM",
       items: [
+        { name: "Messages", href: "/messages", icon: MessageSquare },
         { name: "Notifications", href: "/dashboard?tab=notifications", tab: "notifications", icon: Bell },
         { name: "Profile & Verification", href: "/settings?tab=profile", icon: UserCheck },
         { name: "Settings", href: "/settings", icon: Settings }
@@ -280,7 +283,7 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
     {
       heading: "SYSTEM",
       items: [
-        { name: "Messages", href: "/buyer?tab=messages", tab: "messages", icon: MessageSquare },
+        { name: "Messages", href: "/messages", icon: MessageSquare },
         { name: "Notifications", href: "/buyer?tab=notifications", tab: "notifications", icon: Bell },
         { name: "Company Profile", href: "/settings?tab=profile", icon: Building2 },
         { name: "Settings", href: "/settings", icon: Settings }
@@ -323,6 +326,7 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
       heading: "ACCOUNT",
       items: [
         { name: "Earnings", href: "/driver?tab=earnings", tab: "earnings", icon: IndianRupee },
+        { name: "Messages", href: "/messages", icon: MessageSquare },
         { name: "Notifications", href: "/driver?tab=notifications", tab: "notifications", icon: Bell },
         { name: "Profile", href: "/settings?tab=profile", icon: UserCheck },
         { name: "Settings", href: "/settings", icon: Settings }
@@ -408,7 +412,7 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
       )}
 
       {/* Navigation Sections */}
-      <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto custom-scrollbar">
+      <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {sections.map((section, idx) => (
           <div key={section.heading + idx} className="space-y-1">
             {!collapsed ? (
@@ -455,14 +459,17 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
       {/* User Footer & Sign Out */}
       <div className="p-3 border-t border-green-900/60 bg-green-950/80 shrink-0">
         {!collapsed && userEmail && (
-          <div className="flex items-center gap-2.5 mb-3 px-2">
-            <div className="w-8 h-8 rounded-full bg-emerald-700 border border-emerald-500 text-white flex items-center justify-center text-xs font-bold shrink-0">
-              {userEmail[0].toUpperCase()}
+          <div className="flex items-center justify-between mb-3 px-2">
+            <div className="flex items-center gap-2.5 truncate">
+              <div className="w-8 h-8 rounded-full bg-emerald-700 border border-emerald-500 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                {userEmail[0].toUpperCase()}
+              </div>
+              <div className="truncate flex-1">
+                <p className="text-xs font-semibold text-white truncate">{userEmail}</p>
+                <p className="text-[10px] text-emerald-300 capitalize">{role}</p>
+              </div>
             </div>
-            <div className="truncate flex-1">
-              <p className="text-xs font-semibold text-white truncate">{userEmail}</p>
-              <p className="text-[10px] text-emerald-300 capitalize">{role}</p>
-            </div>
+            <NotificationBell />
           </div>
         )}
 

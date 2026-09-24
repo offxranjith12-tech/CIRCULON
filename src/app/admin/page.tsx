@@ -38,6 +38,7 @@ import {
   Ban,
   Award,
   Info,
+  LayoutDashboard,
   TrendingUp,
   Leaf,
   Recycle,
@@ -73,8 +74,7 @@ import { getDrivers, getShipments } from "@/lib/actions/logistics";
 import { getDeals, type Deal } from "@/lib/actions/deals";
 import { IndustrialSymbiosisGraph } from "@/components/IndustrialSymbiosisGraph";
 
-type AdminTab = "overview" | "verification" | "users" | "moderation" | "analytics" | "impact" | "reports" | "emails" | "tracking" | "symbiosis" | "deals";
-
+type AdminTab = string;
 function AdminContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -389,21 +389,98 @@ function AdminContent() {
     return lower.includes(".pdf") || lower.startsWith("data:application/pdf");
   };
 
+  const tabHeaders: Record<string, { title: string, desc: string, icon: any, colorClass: string }> = {
+    overview: {
+      title: "Admin Command Center",
+      desc: "Platform overview, key metrics, and system operations.",
+      icon: BarChart3,
+      colorClass: "bg-purple-100 text-purple-700"
+    },
+    verification: {
+      title: "Admin Enterprise Management & Verification",
+      desc: "Inspect business documentation & PDFs, approve pending accounts, add new Sellers/Buyers/Drivers, and dispatch login activation emails.",
+      icon: ShieldCheck,
+      colorClass: "bg-green-100 text-green-700"
+    },
+    users: {
+      title: "Companies & Users",
+      desc: "Manage registered companies, users, and platform access.",
+      icon: Users,
+      colorClass: "bg-green-100 text-green-700"
+    },
+    moderation: {
+      title: "Listing Moderation",
+      desc: "Review and approve/reject material listings for marketplace visibility.",
+      icon: Recycle,
+      colorClass: "bg-green-100 text-green-700"
+    },
+    analytics: {
+      title: "AI & Marketplace Analytics",
+      desc: "Insights into AI valorization, platform matches, and transaction metrics.",
+      icon: BarChart3,
+      colorClass: "bg-green-100 text-green-700"
+    },
+    impact: {
+      title: "Environmental Impact (LCA)",
+      desc: "Track CO2e savings, diverted waste, and LCA metrics across the platform.",
+      icon: Leaf,
+      colorClass: "bg-emerald-100 text-emerald-700"
+    },
+    reports: {
+      title: "Safety & Reports",
+      desc: "Review platform disputes, safety reports, and flagged activity.",
+      icon: AlertTriangle,
+      colorClass: "bg-amber-100 text-amber-700"
+    },
+    emails: {
+      title: "Email Audits",
+      desc: "Audit logs of all dispatched system emails and notifications.",
+      icon: Mail,
+      colorClass: "bg-green-100 text-green-700"
+    },
+    tracking: {
+      title: "Live Fleet Tracking",
+      desc: "Real-time logistics map for active shipments and driver locations.",
+      icon: Truck,
+      colorClass: "bg-purple-100 text-purple-700"
+    },
+    symbiosis: {
+      title: "Symbiosis Network",
+      desc: "Interactive graph of circular economy connections and material flows.",
+      icon: Activity,
+      colorClass: "bg-emerald-100 text-emerald-700"
+    },
+    deals: {
+      title: "Deals & Governance",
+      desc: "Monitor platform transactions, deals, and commercial negotiations.",
+      icon: ShoppingBag,
+      colorClass: "bg-purple-100 text-purple-700"
+    }
+  };
+
+  const currentHeader = tabHeaders[activeTab] || {
+    title: activeTab.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+    desc: "This module is currently being provisioned.",
+    icon: LayoutDashboard || Info, // Using Info as a fallback icon from lucide-react if LayoutDashboard isn't imported
+    colorClass: "bg-gray-100 text-gray-700"
+  };
+  const HeaderIcon = currentHeader.icon || Info;
+
   return (
     <div className="max-w-7xl mx-auto space-y-8 pb-16">
       {/* Header */}
       <div className="border-b border-gray-200 pb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-green-100 text-green-700 shadow-sm">
-              <ShieldCheck className="w-6 h-6" />
+            <span className={`p-2 rounded-xl shadow-sm ${currentHeader.colorClass}`}>
+              <HeaderIcon className="w-6 h-6" />
             </span>
             <h1 className="text-3xl font-black text-gray-950 tracking-tight">
-              Admin Enterprise Management & Verification
+              {currentHeader.title}
             </h1>
           </div>
           <p className="text-gray-500 mt-1 text-sm">
-            Inspect business documentation & PDFs, approve pending accounts, add new Sellers/Buyers/Drivers, and dispatch login activation emails.
+            {currentHeader.desc}
           </p>
         </div>
 
@@ -427,213 +504,65 @@ function AdminContent() {
         </div>
       </div>
 
-      {/* Prototype / Demonstration Notice Badge (Part 17) */}
-      <div className="flex items-center justify-between bg-purple-50 border border-purple-200/80 px-4 py-2 rounded-xl text-xs text-purple-950">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse" />
-          <span><strong>Prototype / Demonstration Mode:</strong> Administrative management of live and certified circular economy transactions.</span>
-        </div>
-        <span className="text-[10px] uppercase font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded">
-          Root Admin Authority
-        </span>
-      </div>
-
-      {/* Admin Quick Actions Strip (Part 15) */}
-      <div className="bg-gradient-to-r from-purple-950 via-gray-950 to-green-950 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-purple-800/40">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-purple-400 font-bold block mb-2.5">
-          Admin Quick Actions
-        </span>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-          <button
-            onClick={() => handleTabSwitch("verification")}
-            className="p-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex flex-col items-center text-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Verify Business</span>
-          </button>
-          <button
-            onClick={() => handleTabSwitch("moderation")}
-            className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 font-semibold text-xs flex flex-col items-center text-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <Recycle className="w-4 h-4" />
-            <span>Review Listing</span>
-          </button>
-          <button
-            onClick={() => handleTabSwitch("deals")}
-            className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 font-semibold text-xs flex flex-col items-center text-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <MessageSquare className="w-4 h-4" />
-            <span>View Active Deals</span>
-          </button>
-          <button
-            onClick={() => handleTabSwitch("tracking")}
-            className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 font-semibold text-xs flex flex-col items-center text-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <Truck className="w-4 h-4" />
-            <span>View Active Shipments</span>
-          </button>
-          <button
-            onClick={() => handleTabSwitch("reports")}
-            className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 font-semibold text-xs flex flex-col items-center text-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <FileText className="w-4 h-4" />
-            <span>View Reports</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Admin Top Tab Navigation Bar */}
-      <div className="flex items-center gap-2 border-b border-gray-200 pb-1 overflow-x-auto">
-        <button
-          onClick={() => handleTabSwitch("overview")}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
-            activeTab === "overview" 
-              ? "text-purple-800 border-b-2 border-purple-600 bg-purple-50/80 font-black shadow-xs" 
-              : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/60"
-          }`}
-        >
-          <BarChart3 className="w-4 h-4 text-purple-600" />
-          Overview Dashboard
-        </button>
-
-        <button
-          onClick={() => handleTabSwitch("verification")}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
-            activeTab === "verification" 
-              ? "text-purple-800 border-b-2 border-purple-600 bg-purple-50/80 font-black shadow-xs" 
-              : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/60"
-          }`}
-        >
-          <ShieldCheck className="w-4 h-4 text-green-600" />
-          Company Verification
-          {pendingCount > 0 && (
-            <span className="px-2 py-0.5 text-xs font-extrabold rounded-full bg-amber-100 text-amber-800 border border-amber-300 animate-pulse">
-              {pendingCount} Pending
+      {/* Prototype / Demonstration Notice Badge & Admin Quick Actions Strip - Only on Overview */}
+      {activeTab === 'overview' && (
+        <>
+          <div className="flex items-center justify-between bg-purple-50 border border-purple-200/80 px-4 py-2 rounded-xl text-xs text-purple-950">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse" />
+              <span><strong>Prototype / Demonstration Mode:</strong> Administrative management of live and certified circular economy transactions.</span>
+            </div>
+            <span className="text-[10px] uppercase font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded">
+              Root Admin Authority
             </span>
-          )}
-        </button>
+          </div>
 
-        <button
-          onClick={() => handleTabSwitch("users")}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
-            activeTab === "users" 
-              ? "text-green-800 border-b-2 border-green-600 bg-green-50/80 font-black shadow-xs" 
-              : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/60"
-          }`}
-        >
-          <Users className="w-4 h-4 text-green-600" />
-          Companies & Users
-          <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-gray-100 text-gray-700">
-            {registrations.length}
-          </span>
-        </button>
-
-        <button
-          onClick={() => handleTabSwitch("moderation")}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
-            activeTab === "moderation" 
-              ? "text-green-800 border-b-2 border-green-600 bg-green-50/80 font-black shadow-xs" 
-              : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/60"
-          }`}
-        >
-          <Recycle className="w-4 h-4 text-green-600" />
-          Listing Moderation
-          {moderationListings.filter(l => l.status === 'pending').length > 0 && (
-            <span className="px-2 py-0.5 text-xs font-extrabold rounded-full bg-amber-100 text-amber-800 border border-amber-300 animate-pulse">
-              {moderationListings.filter(l => l.status === 'pending').length}
+          <div className="bg-gradient-to-r from-purple-950 via-gray-950 to-green-950 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-purple-800/40">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-purple-400 font-bold block mb-2.5">
+              Admin Quick Actions
             </span>
-          )}
-        </button>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+              <button
+                onClick={() => handleTabSwitch("verification")}
+                className="p-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex flex-col items-center text-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Verify Business</span>
+              </button>
+              <button
+                onClick={() => handleTabSwitch("moderation")}
+                className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 font-semibold text-xs flex flex-col items-center text-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Recycle className="w-4 h-4" />
+                <span>Review Listing</span>
+              </button>
+              <button
+                onClick={() => handleTabSwitch("deals")}
+                className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 font-semibold text-xs flex flex-col items-center text-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>View Active Deals</span>
+              </button>
+              <button
+                onClick={() => handleTabSwitch("tracking")}
+                className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 font-semibold text-xs flex flex-col items-center text-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Truck className="w-4 h-4" />
+                <span>View Active Shipments</span>
+              </button>
+              <button
+                onClick={() => handleTabSwitch("reports")}
+                className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-purple-200 font-semibold text-xs flex flex-col items-center text-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <FileText className="w-4 h-4" />
+                <span>View Reports</span>
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
-        <button
-          onClick={() => handleTabSwitch("analytics")}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
-            activeTab === "analytics" 
-              ? "text-green-800 border-b-2 border-green-600 bg-green-50/80 font-black shadow-xs" 
-              : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/60"
-          }`}
-        >
-          <BarChart3 className="w-4 h-4 text-green-600" />
-          AI & Marketplace Analytics
-        </button>
 
-        <button
-          onClick={() => handleTabSwitch("impact")}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
-            activeTab === "impact" 
-              ? "text-green-800 border-b-2 border-green-600 bg-green-50/80 font-black shadow-xs" 
-              : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/60"
-          }`}
-        >
-          <Leaf className="w-4 h-4 text-emerald-600" />
-          Environmental Impact (LCA)
-        </button>
-
-        <button
-          onClick={() => handleTabSwitch("reports")}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
-            activeTab === "reports" 
-              ? "text-green-800 border-b-2 border-green-600 bg-green-50/80 font-black shadow-xs" 
-              : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/60"
-          }`}
-        >
-          <AlertTriangle className="w-4 h-4 text-amber-600" />
-          Safety & Reports
-          {platformReports.filter(r => r.status === 'pending').length > 0 && (
-            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-red-100 text-red-700">
-              {platformReports.filter(r => r.status === 'pending').length}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={() => handleTabSwitch("emails")}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
-            activeTab === "emails" 
-              ? "text-green-800 border-b-2 border-green-600 bg-green-50/80 font-black shadow-xs" 
-              : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/60"
-          }`}
-        >
-          <Mail className="w-4 h-4 text-green-600" />
-          Email Audits ({emails.length})
-        </button>
-
-        <button
-          onClick={() => handleTabSwitch("tracking")}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
-            activeTab === "tracking" 
-              ? "text-purple-800 border-b-2 border-purple-600 bg-purple-50/80 font-black shadow-xs" 
-              : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/60"
-          }`}
-        >
-          <Truck className="w-4 h-4 text-purple-600" />
-          Fleet Map
-        </button>
-
-        <button
-          onClick={() => handleTabSwitch("symbiosis")}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
-            activeTab === "symbiosis" 
-              ? "text-emerald-800 border-b-2 border-emerald-600 bg-emerald-50/80 font-black shadow-xs" 
-              : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/60"
-          }`}
-        >
-          <Activity className="w-4 h-4 text-emerald-600" />
-          Symbiosis Network
-        </button>
-
-        <button
-          onClick={() => handleTabSwitch("deals")}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
-            activeTab === "deals" 
-              ? "text-purple-800 border-b-2 border-purple-600 bg-purple-50/80 font-black shadow-xs" 
-              : "text-gray-500 hover:text-gray-800 hover:bg-gray-100/60"
-          }`}
-        >
-          <ShoppingBag className="w-4 h-4 text-purple-600" />
-          Deals & Governance ({deals.length})
-        </button>
-      </div>
 
       {/* Notifications Alert Banner */}
       {notification && (
@@ -2986,6 +2915,20 @@ function AdminContent() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {/* ========================================================================= */}
+      {/* GENERIC FALLBACK FOR UNIMPLEMENTED TABS */}
+      {/* ========================================================================= */}
+      {![ 'overview', 'verification', 'users', 'moderation', 'analytics', 'impact', 'reports', 'emails', 'tracking', 'symbiosis', 'deals' ].includes(activeTab) && (
+        <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-gray-200 shadow-sm mt-6">
+          <div className={`p-4 rounded-full ${currentHeader.colorClass || 'bg-gray-100 text-gray-500'} mb-4`}>
+            <HeaderIcon className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-black text-gray-900 mb-2">{currentHeader.title}</h2>
+          <p className="text-gray-500 max-w-md mx-auto">
+            {currentHeader.desc} Specific page content for {currentHeader.title} will be available in the upcoming release.
+          </p>
         </div>
       )}
     </div>

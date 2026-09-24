@@ -179,21 +179,15 @@ export async function getDeals(filterRole?: 'seller' | 'buyer' | 'admin', userId
     }
 
     const { data, error } = await query;
-    if (!error && data && data.length > 0) {
-      return data;
+    if (error) {
+      console.error('Error fetching deals:', error);
+      return [];
     }
+    return data || [];
   } catch (err) {
-    // Graceful fallback to local store
+    console.error('Exception in getDeals:', err);
+    return [];
   }
-
-  // Filter in-memory local deals
-  if (filterRole === 'seller') {
-    return localDeals;
-  }
-  if (filterRole === 'buyer') {
-    return localDeals;
-  }
-  return localDeals;
 }
 
 export async function getDealById(dealId: string): Promise<Deal | null> {
@@ -205,14 +199,15 @@ export async function getDealById(dealId: string): Promise<Deal | null> {
       .eq('id', dealId)
       .maybeSingle();
 
-    if (!error && data) {
-      return data;
+    if (error) {
+      console.error('Error fetching deal by ID:', error);
+      return null;
     }
+    return data || null;
   } catch (err) {
-    // Fallback
+    console.error('Exception in getDealById:', err);
+    return null;
   }
-
-  return localDeals.find(d => d.id === dealId) || null;
 }
 
 export async function createDeal(data: {

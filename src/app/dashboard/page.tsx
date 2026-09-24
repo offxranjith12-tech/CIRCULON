@@ -215,18 +215,66 @@ export default function Dashboard() {
   const totalEarnings = completedDeals.reduce((acc, d) => acc + Number(d.total_amount || 0), 0);
   const totalCO2DivertedKg = Math.round(totalQuantity * 1.85);
 
+  const tabHeaders: Record<string, { title: string, desc: string }> = {
+    overview: {
+      title: "Seller Valorization & Deal Cockpit",
+      desc: "Identify circular end-uses, match qualified industrial offtakers, and track shipments in real-time."
+    },
+    valorization: {
+      title: "What Can It Become?",
+      desc: "AI-driven material valorization and secondary product pathway recommendations."
+    },
+    matches: {
+      title: "Buyer Matches",
+      desc: "Qualified industrial offtakers actively sourcing your exact material profiles."
+    },
+    'market-opportunities': {
+      title: "Market Demand",
+      desc: "Real-time supply vs demand aggregation across CIRCULON exchange."
+    },
+    deals: {
+      title: "Deals Pipeline",
+      desc: "Active commercial negotiations and settled deals."
+    },
+    passports: {
+      title: "Material Passports",
+      desc: "Digital product passports mapping compliance and ESG impact metrics."
+    },
+    symbiosis: {
+      title: "Industrial Symbiosis Network",
+      desc: "Visualize cross-industry waste-to-resource flows."
+    },
+    tracking: {
+      title: "Live Fleet Tracking",
+      desc: "Real-time GPS logistics mapping and active driver coordination."
+    }
+  };
+
+  const currentHeader = tabHeaders[activeTab] || {
+    title: activeTab.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+    desc: "This module is currently being provisioned.",
+    icon: Info,
+    colorClass: "bg-gray-100 text-gray-700"
+  };
+  const HeaderIcon = (currentHeader as any).icon || Info;
+
   return (
     <div className="space-y-6 pb-20">
-      {/* Prototype / Demonstration Notice Badge (Part 17) */}
-      <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200/80 px-4 py-2 rounded-xl text-xs text-emerald-900">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-          <span><strong>Prototype / Demonstration Mode:</strong> Displaying certified database-driven industrial by-product transactions.</span>
-        </div>
-        <span className="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
-          ISO 14040 Verified
-        </span>
-      </div>
+      {/* Overview-only header widgets */}
+      {activeTab === 'overview' && (
+        <>
+          {/* Prototype / Demonstration Notice Badge (Part 17) */}
+          <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200/80 px-4 py-2 rounded-xl text-xs text-emerald-900">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+              <span><strong>Prototype / Demonstration Mode:</strong> Displaying certified database-driven industrial by-product transactions.</span>
+            </div>
+            <span className="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
+              ISO 14040 Verified
+            </span>
+          </div>
+        </>
+      )}
 
       {/* Main Header & Primary CTA (Part 11) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
@@ -238,10 +286,10 @@ export default function Dashboard() {
             <span className="text-xs text-gray-500 font-medium">Circular Intelligence Platform</span>
           </div>
           <h1 className="text-3xl font-black text-gray-950 tracking-tight mt-1.5">
-            Seller Valorization & Deal Cockpit
+            {currentHeader.title}
           </h1>
           <p className="text-gray-500 text-xs mt-0.5">
-            Identify circular end-uses, match qualified industrial offtakers, and track shipments in real-time.
+            {currentHeader.desc}
           </p>
         </div>
 
@@ -257,8 +305,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Seller Quick Action Cards Strip (Part 15) */}
-      <div className="bg-gradient-to-r from-green-950 via-emerald-950 to-gray-950 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-emerald-800/40">
+      {/* Overview-only widgets (Quick Actions, Workflow, Metrics) */}
+      {activeTab === 'overview' && (
+        <>
+          {/* Seller Quick Action Cards Strip (Part 15) */}
+          <div className="bg-gradient-to-r from-green-950 via-emerald-950 to-gray-950 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-emerald-800/40">
         <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold block mb-2.5">
           Seller Quick Actions
         </span>
@@ -373,32 +424,8 @@ export default function Dashboard() {
           <span className="text-[10px] text-emerald-600 font-semibold">{totalCO2DivertedKg.toLocaleString()} KG CO2e saved</span>
         </div>
       </div>
-
-      {/* Tabs Navigation */}
-      <div className="flex border-b border-gray-200 gap-2 overflow-x-auto text-xs font-bold">
-        {[
-          { id: 'overview', label: 'Overview' },
-          { id: 'valorization', label: 'What Can It Become?' },
-          { id: 'matches', label: `Buyer Matches (${allMatches.length})` },
-          { id: 'market-opportunities', label: `Market Demand (${marketOpps.length})` },
-          { id: 'deals', label: `Deals Pipeline (${deals.length})` },
-          { id: 'passports', label: `Material Passports (${passports.length})` },
-          { id: 'symbiosis', label: 'Industrial Symbiosis Network' },
-          { id: 'tracking', label: 'Live Fleet Tracking' }
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`pb-3 px-3.5 border-b-2 whitespace-nowrap transition-colors ${
-              activeTab === tab.id
-                ? 'border-emerald-600 text-emerald-700 font-black'
-                : 'border-transparent text-gray-500 hover:text-gray-900'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+        </>
+      )}
 
       {/* TAB CONTENT: Overview */}
       {activeTab === 'overview' && (
@@ -853,6 +880,21 @@ export default function Dashboard() {
           quantity={modalMatchInfo.quantity}
           wasteId={modalMatchInfo.wasteId}
         />
+      )}
+
+      {/* ========================================================================= */}
+      {/* GENERIC FALLBACK FOR UNIMPLEMENTED TABS */}
+      {/* ========================================================================= */}
+      {![ 'overview', 'valorization', 'matches', 'market-opportunities', 'deals', 'passports', 'symbiosis', 'tracking' ].includes(activeTab) && (
+        <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-gray-200 shadow-sm mt-6">
+          <div className={`p-4 rounded-full ${(currentHeader as any).colorClass || 'bg-emerald-50 text-emerald-500'} mb-4`}>
+            <HeaderIcon className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-black text-gray-900 mb-2">{currentHeader.title}</h2>
+          <p className="text-gray-500 max-w-md mx-auto">
+            {currentHeader.desc} Specific page content for {currentHeader.title} will be available in the upcoming release.
+          </p>
+        </div>
       )}
     </div>
   );

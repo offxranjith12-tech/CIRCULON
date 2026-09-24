@@ -203,7 +203,11 @@ export async function getMaterialPassportsForUser(
     }
 
     const { data, error } = await query;
-    if (!error && data && data.length > 0) {
+    if (error) {
+      console.error('Error fetching material passports:', error);
+      return [];
+    }
+    if (data && data.length > 0) {
       return data.map((d: any) => ({
         id: d.id,
         wasteId: d.waste_id,
@@ -231,11 +235,11 @@ export async function getMaterialPassportsForUser(
         custodyTimeline: Array.isArray(d.custody_timeline) ? d.custody_timeline : []
       }));
     }
-  } catch {
-    // Fallback to demo passports
+    return [];
+  } catch (err) {
+    console.error('Exception in getMaterialPassportsForUser:', err);
+    return [];
   }
-
-  return DEFAULT_MATERIAL_PASSPORTS;
 }
 
 export async function createMaterialPassport(

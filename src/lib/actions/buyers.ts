@@ -333,13 +333,15 @@ export async function getDetailedBuyerRequirements(): Promise<BuyerRequirement[]
       .eq('buyer_id', user.id)
       .order('created_at', { ascending: false });
 
-    if (!error && data && data.length > 0) {
-      return data;
+    if (error) {
+      console.error('Error fetching requirements:', error);
+      return [];
     }
+    return data || [];
   } catch (err) {
-    // fallback
+    console.error('Exception in getDetailedBuyerRequirements:', err);
+    return [];
   }
-  return localBuyerRequirements;
 }
 
 export async function addDetailedBuyerRequirement(formDataOrObj: FormData | Record<string, any>): Promise<{ success: boolean; requirement?: BuyerRequirement }> {
@@ -414,13 +416,15 @@ export async function getSavedListingIds(): Promise<string[]> {
       .select('waste_id')
       .eq('buyer_id', user.id);
 
-    if (!error && data) {
-      return data.map((d: any) => d.waste_id);
+    if (error) {
+      console.error('Error fetching saved listings:', error);
+      return [];
     }
-  } catch {
-    // fallback
+    return (data || []).map((d: any) => d.waste_id);
+  } catch (err) {
+    console.error('Exception in getSavedListingIds:', err);
+    return [];
   }
-  return localSavedListings;
 }
 
 export async function toggleSaveListing(wasteId: string): Promise<{ saved: boolean }> {

@@ -33,7 +33,9 @@ import {
   Truck,
   Award,
   AlertCircle,
-  FileText
+  FileText,
+  Info,
+  LayoutDashboard
 } from "lucide-react";
 import { 
   BarChart, 
@@ -71,8 +73,8 @@ import { QrCode, Navigation, Share2 } from "lucide-react";
 export default function BuyerDashboard() {
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams ? searchParams.get("tab") : "overview";
-  const [activeTab, setActiveTab] = useState<"overview" | "requirements" | "marketplace" | "ai-finder" | "deals" | "saved" | "tracking" | "passports" | "symbiosis">(
-    (tabFromUrl as any) || "overview"
+  const [activeTab, setActiveTab] = useState<string>(
+    (tabFromUrl as string) || "overview"
   );
 
   useEffect(() => {
@@ -408,18 +410,70 @@ export default function BuyerDashboard() {
   });
   const materialChartData = Object.entries(materialTypeMap).map(([name, value]) => ({ name, value }));
 
+  const tabHeaders: Record<string, { title: string, desc: string }> = {
+    overview: {
+      title: "Buyer Procurement Cockpit",
+      desc: "Source pre-screened industrial by-products, publish technical intake requirements, discover opportunities, and track order logistics."
+    },
+    requirements: {
+      title: "My Material Requirements",
+      desc: "Manage your active procurement specifications for inbound secondary materials."
+    },
+    marketplace: {
+      title: "Material Marketplace",
+      desc: "Browse live circular economy supply from verified sellers."
+    },
+    "ai-finder": {
+      title: "AI Match Discovery",
+      desc: "Find hidden procurement opportunities using Natural Language Search."
+    },
+    deals: {
+      title: "Orders & Deals",
+      desc: "Track active and completed commercial negotiations."
+    },
+    saved: {
+      title: "Saved Listings",
+      desc: "Bookmarked materials pending procurement approval."
+    },
+    passports: {
+      title: "Material Passports",
+      desc: "Track compliance, LCA metrics, and digital traceability of inbound stock."
+    },
+    symbiosis: {
+      title: "Industrial Symbiosis Network",
+      desc: "Explore visual relationships and circular economy matches."
+    },
+    tracking: {
+      title: "Inbound Logistics & Tracking",
+      desc: "Live GPS updates on active shipments headed to your facility."
+    }
+  };
+
+  const currentHeader = tabHeaders[activeTab] || {
+    title: activeTab.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+    desc: "This module is currently being provisioned.",
+    icon: LayoutDashboard || Info, // Using Info as a fallback icon from lucide-react if LayoutDashboard isn't imported
+    colorClass: "bg-gray-100 text-gray-700"
+  };
+  const HeaderIcon = (currentHeader as any).icon || Info;
+
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
-      {/* Prototype / Demonstration Notice Badge (Part 17) */}
-      <div className="flex items-center justify-between bg-blue-50 border border-blue-200/80 px-4 py-2 rounded-xl text-xs text-blue-950">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-          <span><strong>Prototype / Demonstration Mode:</strong> Sourcing industrial by-products verified against registered buyer procurement criteria.</span>
-        </div>
-        <span className="text-[10px] uppercase font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
-          CPCB / EPR Compliant
-        </span>
-      </div>
+      {/* Overview-only top widgets */}
+      {activeTab === 'overview' && (
+        <>
+          {/* Prototype / Demonstration Notice Badge (Part 17) */}
+          <div className="flex items-center justify-between bg-blue-50 border border-blue-200/80 px-4 py-2 rounded-xl text-xs text-blue-950">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+              <span><strong>Prototype / Demonstration Mode:</strong> Sourcing industrial by-products verified against registered buyer procurement criteria.</span>
+            </div>
+            <span className="text-[10px] uppercase font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
+              CPCB / EPR Compliant
+            </span>
+          </div>
+        </>
+      )}
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200/80 pb-6">
@@ -434,10 +488,10 @@ export default function BuyerDashboard() {
             </span>
           </div>
           <h1 className="text-3xl font-black tracking-tight text-gray-950 mt-2">
-            Buyer Procurement Cockpit
+            {currentHeader.title}
           </h1>
           <p className="text-xs text-gray-500 mt-1">
-            Source pre-screened industrial by-products, publish technical intake requirements, discover opportunities, and track order logistics.
+            {currentHeader.desc}
           </p>
         </div>
 
@@ -453,8 +507,11 @@ export default function BuyerDashboard() {
         </div>
       </div>
 
-      {/* Buyer Quick Action Cards Strip (Part 15) */}
-      <div className="bg-gradient-to-r from-blue-950 via-slate-950 to-green-950 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-blue-800/40">
+      {/* Overview-only widgets (Quick Actions, Workflow) */}
+      {activeTab === 'overview' && (
+        <>
+          {/* Buyer Quick Action Cards Strip (Part 15) */}
+          <div className="bg-gradient-to-r from-blue-950 via-slate-950 to-green-950 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-blue-800/40">
         <span className="text-[10px] font-mono uppercase tracking-widest text-blue-400 font-bold block mb-2.5">
           Buyer Quick Actions
         </span>
@@ -532,33 +589,8 @@ export default function BuyerDashboard() {
           ))}
         </div>
       </div>
-
-      {/* Top Tab Bar Navigation */}
-      <div className="flex border-b border-gray-200 gap-2 overflow-x-auto text-xs font-bold">
-        {[
-          { id: "overview", label: "Dashboard Overview" },
-          { id: "requirements", label: `My Requirements (${detailedReqs.length})` },
-          { id: "marketplace", label: `Material Marketplace (${wasteListings.length})` },
-          { id: "ai-finder", label: "AI Match Discovery" },
-          { id: "deals", label: `Orders & Deals (${deals.length})` },
-          { id: "saved", label: `Saved Listings (${savedListingIds.length})` },
-          { id: "passports", label: `Material Passports (${passports.length})` },
-          { id: "symbiosis", label: "Industrial Symbiosis" },
-          { id: "tracking", label: "Inbound Tracking" }
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`pb-3 px-3.5 border-b-2 whitespace-nowrap transition-colors ${
-              activeTab === tab.id
-                ? 'border-blue-600 text-blue-700 font-black'
-                : 'border-transparent text-gray-500 hover:text-gray-900'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+        </>
+      )}
 
 
 
@@ -1880,6 +1912,21 @@ export default function BuyerDashboard() {
         passport={selectedPassport}
         onClose={() => setSelectedPassport(null)}
       />
+
+      {/* ========================================================================= */}
+      {/* GENERIC FALLBACK FOR UNIMPLEMENTED TABS */}
+      {/* ========================================================================= */}
+      {![ 'overview', 'requirements', 'marketplace', 'ai-finder', 'deals', 'saved', 'passports', 'symbiosis', 'tracking' ].includes(activeTab) && (
+        <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-3xl border border-gray-200 shadow-sm mt-6">
+          <div className={`p-4 rounded-full ${(currentHeader as any).colorClass || 'bg-blue-50 text-blue-500'} mb-4`}>
+            <HeaderIcon className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-black text-gray-900 mb-2">{currentHeader.title}</h2>
+          <p className="text-gray-500 max-w-md mx-auto">
+            {currentHeader.desc} Specific page content for {currentHeader.title} will be available in the upcoming release.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
