@@ -201,8 +201,7 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
         { name: "Buyer Matches", href: "/dashboard?tab=matches", tab: "matches", icon: Share2 },
         { name: "Buyer Requests", href: "/dashboard?tab=requests", tab: "requests", icon: Inbox },
         { name: "Saved Buyers", href: "/buyers", icon: Heart },
-        { name: "Negotiations", href: "/dashboard?tab=deals", tab: "deals", icon: MessageSquare },
-        { name: "My Deals", href: "/dashboard?tab=deals", tab: "deals", icon: FileCheck2 }
+        { name: "My Deals & Agreements", href: "/dashboard?tab=deals", tab: "deals", icon: FileCheck2 }
       ]
     },
     {
@@ -360,11 +359,34 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
 
   // Helper to check if item is active
   const isItemActive = (item: NavItem) => {
-    const basePath = item.href.split('?')[0];
+    const [basePath, itemQuery] = item.href.split('?');
+    if (pathname !== basePath) return false;
+
     if (item.tab) {
-      return pathname === basePath && currentTab === item.tab;
+      return currentTab === item.tab;
     }
-    return pathname === basePath;
+
+    if (itemQuery) {
+      const itemParams = new URLSearchParams(itemQuery);
+      const itemFilter = itemParams.get('filter');
+      const itemTab = itemParams.get('tab');
+      if (itemFilter) {
+        return searchParams?.get('filter') === itemFilter;
+      }
+      if (itemTab) {
+        return currentTab === itemTab;
+      }
+    } else {
+      if (basePath === '/waste') {
+        const filter = searchParams?.get('filter');
+        return !filter || filter === 'all';
+      }
+      if (basePath === '/dashboard' || basePath === '/admin' || basePath === '/buyer' || basePath === '/driver') {
+        return !searchParams?.get('tab') || searchParams?.get('tab') === 'overview';
+      }
+    }
+
+    return true;
   };
 
   const renderNavContent = () => (
@@ -473,7 +495,16 @@ export function Sidebar({ role, userEmail }: SidebarProps) {
           </div>
         )}
 
-        <form action={logout}>
+        <form 
+          action={logout}
+          onSubmit={() => {
+            if (typeof window !== "undefined") {
+              sessionStorage.clear();
+              localStorage.removeItem("circulon_site_closed");
+              localStorage.removeItem("circulon_closed_at");
+            }
+          }}
+        >
           <button
             type="submit"
             title="Sign Out"

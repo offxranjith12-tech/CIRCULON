@@ -23,129 +23,25 @@ import { type SymbiosisNode, type SymbiosisLink } from "@/lib/types";
 interface IndustrialSymbiosisGraphProps {
   role?: string;
   userCompany?: string;
+  nodes?: SymbiosisNode[];
+  links?: SymbiosisLink[];
   onInitiateConnection?: (node: SymbiosisNode) => void;
 }
 
-const NODES: SymbiosisNode[] = [
-  {
-    id: 'node-1',
-    name: 'Apex Spinning & Knitting',
-    companyName: 'Apex Industrial Recycling Corp',
-    industry: 'Textile Mills',
-    role: 'producer',
-    location: 'Tirupur, Tamil Nadu',
-    coordinates: { x: 160, y: 140 },
-    materialsSupplied: ['Cotton Comber Noil', 'Hosiery Fabric Clips', 'Yarn Waste'],
-    materialsConsumed: ['Raw Cotton Bales'],
-    annualDivertedTons: 1450,
-    co2AvoidedTons: 2680,
-    activePartnerships: 4
-  },
-  {
-    id: 'node-2',
-    name: 'EcoThreads Open-End Spinning',
-    companyName: 'EcoThreads Manufacturing Corp',
-    industry: 'Textile Recycling & Yarn',
-    role: 'consumer',
-    location: 'Coimbatore, Tamil Nadu',
-    coordinates: { x: 420, y: 110 },
-    materialsSupplied: ['Recycled OE Yarn 10s-20s'],
-    materialsConsumed: ['Cotton Comber Scraps', 'Textile Offcuts'],
-    annualDivertedTons: 2100,
-    co2AvoidedTons: 3880,
-    activePartnerships: 6
-  },
-  {
-    id: 'node-3',
-    name: 'GreenPolymer Compounders',
-    companyName: 'GreenPolymer Recyclers Ltd',
-    industry: 'Plastics & Polymers',
-    role: 'both',
-    location: 'Chennai, Tamil Nadu',
-    coordinates: { x: 680, y: 160 },
-    materialsSupplied: ['HDPE Granules', 'rPET Flakes'],
-    materialsConsumed: ['Post-Industrial Drums', 'PET Bottles', 'LDPE Films'],
-    annualDivertedTons: 3200,
-    co2AvoidedTons: 6240,
-    activePartnerships: 8
-  },
-  {
-    id: 'node-4',
-    name: 'AcousticEco Wall Panels',
-    companyName: 'SoundSafe Architectural Board Ltd',
-    industry: 'Building Materials',
-    role: 'consumer',
-    location: 'Bengaluru, Karnataka',
-    coordinates: { x: 300, y: 320 },
-    materialsSupplied: ['Acoustic Ceiling Tiles'],
-    materialsConsumed: ['Cotton Fiber Waste', 'Sugarcane Bagasse'],
-    annualDivertedTons: 980,
-    co2AvoidedTons: 1760,
-    activePartnerships: 3
-  },
-  {
-    id: 'node-5',
-    name: 'Erode Agro-Fiber Processors',
-    companyName: 'Sakthi Bio-Cellulose Mills',
-    industry: 'Agri-Biomass & Paper',
-    role: 'producer',
-    location: 'Erode, Tamil Nadu',
-    coordinates: { x: 180, y: 450 },
-    materialsSupplied: ['Sugarcane Bagasse Pulp', 'Desalinated Coir Fiber'],
-    materialsConsumed: ['Agricultural Residues'],
-    annualDivertedTons: 4500,
-    co2AvoidedTons: 7420,
-    activePartnerships: 5
-  },
-  {
-    id: 'node-6',
-    name: 'Dalmia Pozzolanic Green Cement',
-    companyName: 'Dalmia Circular Cement Works',
-    industry: 'Cement & Infrastructure',
-    role: 'consumer',
-    location: 'Salem, Tamil Nadu',
-    coordinates: { x: 550, y: 390 },
-    materialsSupplied: ['Portland Pozzolana Green Cement'],
-    materialsConsumed: ['Rice Husk Ash', 'Foundry Slag', 'Fly Ash'],
-    annualDivertedTons: 12500,
-    co2AvoidedTons: 18400,
-    activePartnerships: 11
-  },
-  {
-    id: 'node-7',
-    name: 'SteelForge Secondary Metallurgy',
-    companyName: 'SteelForge Industries',
-    industry: 'Foundry & Metallurgy',
-    role: 'both',
-    location: 'Pune, Maharashtra',
-    coordinates: { x: 740, y: 440 },
-    materialsSupplied: ['Deoxidant Ingots', 'Foundry Slag'],
-    materialsConsumed: ['Aluminium Foundry Turnings', 'HMS Scrap'],
-    annualDivertedTons: 8900,
-    co2AvoidedTons: 14200,
-    activePartnerships: 7
-  }
-];
-
-const LINKS: SymbiosisLink[] = [
-  { id: 'l1', sourceId: 'node-1', targetId: 'node-2', materialName: 'Cotton Comber Scraps', annualVolumeKg: 45000, status: 'active', co2OffsetKg: 83250 },
-  { id: 'l2', sourceId: 'node-1', targetId: 'node-4', materialName: 'Coarse Textile Fluff', annualVolumeKg: 18000, status: 'active', co2OffsetKg: 32400 },
-  { id: 'l3', sourceId: 'node-5', targetId: 'node-4', materialName: 'Bagasse Cellulose Fiber', annualVolumeKg: 28000, status: 'active', co2OffsetKg: 46200 },
-  { id: 'l4', sourceId: 'node-5', targetId: 'node-6', materialName: 'Rice Husk Ash Bio-Silica', annualVolumeKg: 85000, status: 'active', co2OffsetKg: 119000 },
-  { id: 'l5', sourceId: 'node-3', targetId: 'node-4', materialName: 'Bonding Polyester Resin', annualVolumeKg: 14000, status: 'potential', co2OffsetKg: 28000 },
-  { id: 'l6', sourceId: 'node-7', targetId: 'node-6', materialName: 'Granulated Foundry Slag', annualVolumeKg: 120000, status: 'active', co2OffsetKg: 195000 }
-];
+const NODES: SymbiosisNode[] = [];
+const LINKS: SymbiosisLink[] = [];
 
 export function IndustrialSymbiosisGraph({
   role = 'seller',
   userCompany,
+  nodes,
+  links,
   onInitiateConnection
 }: IndustrialSymbiosisGraphProps) {
-  const [selectedNode, setSelectedNode] = useState<SymbiosisNode | null>(NODES[0]);
+  const activeNodes = nodes || NODES;
+  const activeLinks = links || LINKS;
+  const [selectedNode, setSelectedNode] = useState<SymbiosisNode | null>(activeNodes[0] || null);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-
-  // Filter nodes for role context
-  const activeNodes = NODES;
 
   const getNodeColor = (r: 'producer' | 'consumer' | 'both') => {
     if (r === 'producer') return '#10b981'; // emerald
@@ -211,10 +107,24 @@ export function IndustrialSymbiosisGraph({
 
             <rect width="100%" height="100%" fill="url(#symbiosis-grid)" />
 
+            {/* Empty state message */}
+            {activeNodes.length === 0 && (
+              <text
+                x="450"
+                y="300"
+                textAnchor="middle"
+                fill="#94a3b8"
+                fontSize="14"
+                fontWeight="500"
+              >
+                No active industrial symbiosis nodes mapped yet. Network flows will appear as deals are finalized.
+              </text>
+            )}
+
             {/* Connection Links */}
-            {LINKS.map(link => {
-              const src = NODES.find(n => n.id === link.sourceId);
-              const tgt = NODES.find(n => n.id === link.targetId);
+            {activeLinks.map(link => {
+              const src = activeNodes.find(n => n.id === link.sourceId);
+              const tgt = activeNodes.find(n => n.id === link.targetId);
               if (!src || !tgt) return null;
 
               const isHighlighted = 
@@ -404,11 +314,11 @@ export function IndustrialSymbiosisGraph({
               <div className="pt-2 border-t border-gray-200">
                 <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-2">
                   Active Symbiosis Exchange Channels ({
-                    LINKS.filter(l => l.sourceId === selectedNode.id || l.targetId === selectedNode.id).length
+                    activeLinks.filter(l => l.sourceId === selectedNode.id || l.targetId === selectedNode.id).length
                   })
                 </span>
                 <div className="space-y-1.5 text-xs">
-                  {LINKS.filter(l => l.sourceId === selectedNode.id || l.targetId === selectedNode.id).map(l => (
+                  {activeLinks.filter(l => l.sourceId === selectedNode.id || l.targetId === selectedNode.id).map(l => (
                     <div key={l.id} className="p-2 rounded-lg bg-white border border-gray-200 flex items-center justify-between">
                       <span className="font-bold text-gray-800">{l.materialName}</span>
                       <span className="text-emerald-700 font-bold">{Math.round(l.annualVolumeKg / 1000)} T/yr</span>

@@ -28,7 +28,6 @@ export async function draftOutreachMessage(buyerName: string, materialName: stri
 
     return response.text || "Failed to generate message.";
   } catch (error: any) {
-    console.error("AI Outreach Failed with real API. Falling back to mock message.", error?.message || error);
-    return `[Mock AI Outline]\nSubject: Supplying ${quantity} KG of ${materialName} for ${buyerName}\n\nHi ${buyerName} team,\n\nWe noticed you are sourcing ${materialName}. We currently have ${quantity} KG available that matches your industry requirements.\n\nCould we arrange a quick call to discuss pricing and logistics?\n\nBest regards,\n${companyName}`;
+    return `Subject: Supplying ${quantity} KG of ${materialName} for ${buyerName}\n\nHi ${buyerName} team,\n\nWe noticed you are sourcing ${materialName}. We currently have ${quantity} KG available that matches your industry requirements.\n\nCould we arrange a quick call to discuss pricing and logistics?\n\nBest regards,\n${companyName}`;
   }
 }

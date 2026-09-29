@@ -131,11 +131,11 @@ const FAQS = [
   },
   {
     q: "Is it completely free to list industrial waste?",
-    a: "Yes! Listing your materials, receiving Google Gemini AI composition diagnostics, and reviewing buyer match opportunities is 100% free for industrial waste generators."
+    a: "Yes! Listing your materials, receiving AI composition diagnostics, and reviewing buyer match opportunities is 100% free for industrial waste generators."
   },
   {
-    q: "How does the Google Gemini AI material diagnostic work?",
-    a: "When you enter waste details or upload photos, Google Gemini 2.5 Flash analyzes composition, standardizes naming, classifies quality tiers, and cross-references global circular manufacturing databases to uncover profitable reuse pathways."
+    q: "How does the AI material diagnostic work?",
+    a: "When you enter waste details or upload photos, CIRCULON AI analyzes composition, standardizes naming, classifies quality tiers, and cross-references global circular manufacturing databases to uncover profitable reuse pathways."
   },
   {
     q: "What types of industrial waste are supported?",
@@ -260,7 +260,7 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="mt-6 text-lg sm:text-xl text-gray-600 leading-relaxed max-w-3xl mx-auto"
             >
-              CIRCULON pairs <strong>Google Gemini 2.5 AI</strong> with real-time freight economics to transform factory offcuts, scrap, and by-products into high-value raw material supply chains.
+              CIRCULON pairs <strong>Advanced AI</strong> with real-time freight economics to transform factory offcuts, scrap, and by-products into high-value raw material supply chains.
             </motion.p>
 
             {/* Action Buttons */}
@@ -313,7 +313,7 @@ export default function Home() {
                   <h3 className="font-bold text-gray-900 text-lg">Faster Submissions</h3>
                 </div>
                 <p className="text-gray-600 text-sm leading-relaxed mt-2 pl-1">
-                  Enables sellers to submit scrap or product requests quickly—within a minute—with automated Gemini AI classification and immediate buyer matching.
+                  Enables sellers to submit scrap or product requests quickly—within a minute—with automated AI classification and immediate buyer matching.
                 </p>
               </div>
             </motion.div>
@@ -470,7 +470,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">Instant AI Diagnostics</h3>
                 <p className="text-gray-600 text-sm leading-relaxed">
-                  Upload scrap photos or descriptions. Gemini identifies standardized grades, moisture/condition tiers, and recommended cross-industry buyers.
+                  Upload scrap photos or descriptions. AI identifies standardized grades, moisture/condition tiers, and recommended cross-industry buyers.
                 </p>
               </div>
 
@@ -682,10 +682,10 @@ export default function Home() {
               Interactive AI Diagnostic Test
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-950 mt-3 tracking-tight">
-              Test How Gemini AI Categorizes Your Scrap
+              Test How AI Categorizes Your Scrap
             </h2>
             <p className="text-gray-600 mt-2 text-sm sm:text-base">
-              Click any sample industrial scrap below to see live simulated Google Gemini outputs.
+              Click any sample industrial scrap below to see live simulated AI outputs.
             </p>
 
             <div className="flex flex-wrap justify-center gap-2 mt-6">
@@ -730,7 +730,7 @@ export default function Home() {
                   <Sparkles className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 text-base">Gemini 2.5 Diagnostic Output</h4>
+                  <h4 className="font-bold text-gray-900 text-base">AI Diagnostic Output</h4>
                   <span className="text-xs text-gray-500">Autonomous circular classification engine</span>
                 </div>
               </div>
@@ -1025,7 +1025,7 @@ export default function Home() {
               </div>
               <h3 className="font-bold text-lg text-gray-900 mb-2">Instant AI Diagnostic</h3>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Google Gemini standardizes your material and identifies multiple secondary commercial reuse pathways.
+                CIRCULON AI standardizes your material and identifies multiple secondary commercial reuse pathways.
               </p>
             </div>
 

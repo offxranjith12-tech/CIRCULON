@@ -6,6 +6,8 @@ export interface DriverInfo {
   vehicle_number: string;
   pickup_date: string;
   transporter?: string;
+  fleet?: string;
+  phone?: string;
   vehicle_type?: string;
   notes?: string;
 }
@@ -166,32 +168,12 @@ export function calculateNetCircularValue(
   };
 }
 
-export const VERIFIED_FLEET_DRIVERS = [
-  {
-    driver_name: "Ramesh Kumar",
-    driver_phone: "+91 98410 22334",
-    vehicle_number: "TN 38 BX 4421",
-    transporter: "GreenFleet Circular Logistics",
-    vehicle_type: "16-Ton Flatbed (Electric/CNG)",
-    rating: "4.9 ★",
-    trips: "120+ Verified Pickups"
-  },
-  {
-    driver_name: "Murugan S",
-    driver_phone: "+91 94431 88921",
-    vehicle_number: "TN 43 CD 9912",
-    transporter: "Tamil Nadu EcoHaul Express",
-    vehicle_type: "10-Ton Enclosed Container",
-    rating: "4.8 ★",
-    trips: "85+ Industrial Loads"
-  },
-  {
-    driver_name: "David Prakash",
-    driver_phone: "+91 98220 77112",
-    vehicle_number: "TN 66 EF 5543",
-    transporter: "FastTrack Industrial Logistics",
-    vehicle_type: "22-Ton Multi-Axle Carrier",
-    rating: "5.0 ★",
-    trips: "210+ Heavy Deliveries"
-  }
-];
+export const VERIFIED_FLEET_DRIVERS: Array<{
+  driver_name: string;
+  driver_phone: string;
+  vehicle_number: string;
+  transporter: string;
+  vehicle_type: string;
+  rating: string;
+  trips: string;
+}> = [];

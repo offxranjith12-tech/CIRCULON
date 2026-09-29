@@ -14,16 +14,19 @@ export function Navbar({ userEmail, role = 'seller' }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  // Hide Navbar when logged in (dashboard has its own sidebar) or on the login page
+  // Hide Navbar on dashboard routes (dashboard has its own sidebar) or on the login page
   const isDashboardRoute = pathname.startsWith('/dashboard') || 
                           pathname.startsWith('/buyer') || 
                           pathname.startsWith('/admin') || 
+                          pathname.startsWith('/driver') || 
                           pathname.startsWith('/waste') || 
                           pathname.startsWith('/buyers') || 
                           pathname.startsWith('/matches') || 
+                          pathname.startsWith('/messages') || 
+                          pathname.startsWith('/passport') || 
                           pathname.startsWith('/settings');
 
-  if (userEmail || pathname === '/login' || isDashboardRoute) {
+  if (pathname === '/login' || isDashboardRoute) {
     return null;
   }
 

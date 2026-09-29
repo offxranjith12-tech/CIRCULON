@@ -4,144 +4,7 @@ import { createClient } from '@/utils/supabase/server';
 import { type MaterialPassport, type CustodyEvent } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
-// Seed demo passports for instant testing
-const DEFAULT_MATERIAL_PASSPORTS: MaterialPassport[] = [
-  {
-    id: 'CIRC-DPP-2026-CT9812',
-    wasteId: 'sample-waste-1',
-    dealId: 'deal-cotton-tirupur-1',
-    batchNumber: 'BATCH-2026-09-TN42',
-    materialName: 'Post-Industrial Cotton Comber Scraps',
-    category: 'Textiles',
-    quantity: 4500,
-    unit: 'KG',
-    originLocation: 'Tirupur, Tamil Nadu',
-    originCompany: 'Apex Industrial Recycling Corp',
-    sellerId: 'seller-apex-1',
-    buyerCompany: 'EcoThreads Manufacturing Corp',
-    buyerId: 'buyer-ecothreads-1',
-    driverName: 'Ramesh Kumar (TN 38 BX 4421)',
-    qualityScore: 86,
-    purityPercentage: 91,
-    contaminationLevel: 'Low',
-    circularityScore: 94,
-    co2AvoidedKg: 8325,
-    landfillDivertedKg: 4500,
-    waterSavedLiters: 112500,
-    createdAt: new Date(Date.now() - 3600000 * 48).toISOString(),
-    qrPayloadUrl: '/passport/CIRC-DPP-2026-CT9812',
-    certificateHash: '0x9f83b2a71e8c049d5a821e93cbf0281b3749a9f24419adcb6179b0c034ae112f',
-    custodyTimeline: [
-      {
-        step: 'created',
-        title: 'By-Product Batch Registered & Weighed',
-        timestamp: '2026-09-18 09:30 AM',
-        actor: 'Apex Industrial Recycling Corp',
-        location: 'Tirupur Weighbridge Facility',
-        status: 'completed',
-        notes: 'Gross batch 4,500 KG recorded on electronic weighbridge #WB-4412.'
-      },
-      {
-        step: 'analyzed',
-        title: 'CIRCULON Preliminary AI Material Assessment',
-        timestamp: '2026-09-18 10:15 AM',
-        actor: 'CIRCULON AI Vision Engine',
-        location: 'Cloud Neural Processor',
-        status: 'completed',
-        notes: 'Quality Score 86/100, Purity 91%, zero synthetic polyester detected.'
-      },
-      {
-        step: 'matched',
-        title: 'Procurement Matching & Commercial Accord',
-        timestamp: '2026-09-19 02:45 PM',
-        actor: 'EcoThreads Manufacturing Corp',
-        location: 'Coimbatore Procurement Office',
-        status: 'completed',
-        notes: 'Agreed at ₹36/KG for open-end rotor yarn manufacturing.'
-      },
-      {
-        step: 'dispatched',
-        title: 'Carrier Assigned & Electronic Gate Pass Issued',
-        timestamp: '2026-09-20 08:30 AM',
-        actor: 'Driver Ramesh Kumar (GreenFleet Logistics)',
-        location: 'Tirupur Gate 2',
-        status: 'completed',
-        notes: 'Vehicle TN 38 BX 4421 loaded with 15 standard compressed bales.'
-      },
-      {
-        step: 'in_transit',
-        title: 'Freight In-Transit with Telematics Monitoring',
-        timestamp: '2026-09-20 10:45 AM',
-        actor: 'GreenFleet Logistics',
-        location: 'Avinashi Highway NH-544',
-        status: 'in_progress',
-        notes: 'Estimated arrival in Coimbatore: 12:30 PM.'
-      },
-      {
-        step: 'delivered',
-        title: 'Consignee Quality Verification & Acceptance',
-        timestamp: 'Pending Delivery',
-        actor: 'EcoThreads QA Inspection Unit',
-        location: 'Coimbatore Spinning Mill #4',
-        status: 'pending',
-        notes: 'Bale moisture test & lab verification pending gate intake.'
-      }
-    ]
-  },
-  {
-    id: 'CIRC-DPP-2026-HD4401',
-    wasteId: 'sample-waste-2',
-    batchNumber: 'BATCH-2026-09-CBE-HDPE',
-    materialName: 'High-Density Polyethylene (HDPE) Regrind',
-    category: 'Plastics & Polymers',
-    quantity: 12000,
-    unit: 'KG',
-    originLocation: 'Coimbatore, Tamil Nadu',
-    originCompany: 'Apex Industrial Recycling Corp',
-    sellerId: 'seller-apex-1',
-    buyerCompany: 'GreenPolymer Recyclers Ltd',
-    buyerId: '1d04eb58-fda7-4e34-9fa0-19e96f1d5ff2',
-    qualityScore: 88,
-    purityPercentage: 93,
-    contaminationLevel: 'Low',
-    circularityScore: 96,
-    co2AvoidedKg: 23400,
-    landfillDivertedKg: 12000,
-    waterSavedLiters: 48000,
-    createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
-    qrPayloadUrl: '/passport/CIRC-DPP-2026-HD4401',
-    certificateHash: '0x3c71a9e92d8471b058a9844bf782c1b29a8f4c01d98e72ba643801cf99b2e8a7',
-    custodyTimeline: [
-      {
-        step: 'created',
-        title: 'Post-Industrial Regrind Flakes Binned',
-        timestamp: '2026-09-17 11:00 AM',
-        actor: 'Apex Industrial Recycling Corp',
-        location: 'Coimbatore Processing Plant',
-        status: 'completed',
-        notes: 'Washed and granulate-sorted blow molding scrap.'
-      },
-      {
-        step: 'analyzed',
-        title: 'Melt Flow & Purity Spectrometry Assessment',
-        timestamp: '2026-09-17 11:30 AM',
-        actor: 'CIRCULON AI Diagnostics',
-        location: 'Cloud Platform',
-        status: 'completed',
-        notes: 'Purity 93%, High MFI stability, suitable for drainage pipes.'
-      },
-      {
-        step: 'matched',
-        title: 'Buyer Requirement Lock',
-        timestamp: '2026-09-18 04:20 PM',
-        actor: 'GreenPolymer Recyclers Ltd',
-        location: 'Chennai Procurement Desk',
-        status: 'completed',
-        notes: 'Contract locked at ₹28/KG for 12-Ton batch.'
-      }
-    ]
-  }
-];
+const DEFAULT_MATERIAL_PASSPORTS: MaterialPassport[] = [];
 
 export async function getMaterialPassport(id: string): Promise<MaterialPassport | null> {
   try {
@@ -181,11 +44,10 @@ export async function getMaterialPassport(id: string): Promise<MaterialPassport 
       };
     }
   } catch {
-    // Graceful fallback to seed passports
+    // Graceful fallback
   }
 
-  const found = DEFAULT_MATERIAL_PASSPORTS.find(p => p.id === id);
-  return found || null;
+  return null;
 }
 
 export async function getMaterialPassportsForUser(

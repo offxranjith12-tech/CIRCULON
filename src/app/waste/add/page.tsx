@@ -107,10 +107,10 @@ export default function AddWastePage() {
     }
   };
 
-  const handleSaveAndFindBuyers = async () => {
+  const handleSaveListing = async (destination: 'matches' | 'listings' = 'matches') => {
     setPublishing(true);
     const form = new FormData();
-    form.append('material_name', aiResult?.material || formData.wasteType);
+    form.append('material_name', aiResult?.material || formData.wasteType || 'Industrial Waste Byproduct');
     form.append('category', aiResult?.category || formData.category);
     form.append('quantity', formData.quantity.toString());
     form.append('unit', formData.unit);
@@ -133,36 +133,40 @@ export default function AddWastePage() {
       return;
     }
 
-    const params = new URLSearchParams({
-      wasteId: newWasteId,
-      materialType: aiResult?.material || formData.wasteType,
-      quantity: formData.quantity.toString()
-    });
-    router.push(`/matches?${params.toString()}`);
+    if (destination === 'listings') {
+      router.push('/waste');
+    } else {
+      const params = new URLSearchParams({
+        wasteId: newWasteId,
+        materialType: aiResult?.material || formData.wasteType,
+        quantity: formData.quantity.toString()
+      });
+      router.push(`/matches?${params.toString()}`);
+    }
   };
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-16">
       {/* Page Header */}
-      <div className="border-b border-gray-200/80 pb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+      <div className="border-b border-gray-200 pb-6 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-green-100 text-green-800 border border-green-200">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-green-100 text-green-900 border border-green-200">
               Waste Generator
             </span>
-            <span className="text-xs text-gray-500 font-medium">Step 1: Classification & AI Diagnostics</span>
+            <span className="text-xs text-gray-600 font-medium">Step 1: Classification & AI Diagnostics</span>
           </div>
           <h1 className="text-3xl font-black tracking-tight text-gray-950 mt-1.5">
             Add New Waste Listing
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-600 mt-1">
             Provide byproduct specifications for automated AI circular classification, valuation, and verified buyer matching.
           </p>
         </div>
 
         <Link
           href="/waste"
-          className="text-xs font-bold text-gray-600 hover:text-gray-900 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition"
+          className="text-xs font-bold text-gray-800 hover:text-green-800 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition border border-gray-200"
         >
           View My Listings →
         </Link>
@@ -170,20 +174,20 @@ export default function AddWastePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* FORM SECTION (LEFT COLUMN) */}
-        <div className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs">
+        <div className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-gray-200 shadow-sm">
           <form onSubmit={handleAnalyze} className="space-y-5">
             {/* Material Name */}
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1.5">
                 Material Name / Waste Stream *
               </label>
               <input 
                 type="text" 
                 name="wasteType"
-                placeholder="e.g. Cotton Textile Waste, PET Flakes, Rice Husk"
+                placeholder="e.g. Cotton Textile Waste, PET Flakes, Rice Husk, Slag"
                 value={formData.wasteType}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition" 
+                className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition" 
                 required 
               />
             </div>
@@ -191,24 +195,24 @@ export default function AddWastePage() {
             {/* Category & Unit */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1.5">
                   Material Category *
                 </label>
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-white"
+                  className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm text-gray-900 bg-white font-medium focus:ring-2 focus:ring-green-500 outline-none"
                 >
                   {MATERIAL_CATEGORIES.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat} value={cat} className="text-gray-900 bg-white">{cat}</option>
                   ))}
                 </select>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1.5">
                     Quantity *
                   </label>
                   <input 
@@ -217,19 +221,19 @@ export default function AddWastePage() {
                     min="1"
                     value={formData.quantity}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-500 outline-none" 
+                    className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm text-gray-900 bg-white font-medium focus:ring-2 focus:ring-green-500 outline-none" 
                     required 
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1.5">
                     Unit
                   </label>
                   <select
                     name="unit"
                     value={formData.unit}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-white"
+                    className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm text-gray-900 bg-white font-medium focus:ring-2 focus:ring-green-500 outline-none"
                   >
                     <option value="KG">KG</option>
                     <option value="MT">MT (Tons)</option>
@@ -243,7 +247,7 @@ export default function AddWastePage() {
             {/* Moisture & Contamination */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                   <Droplets className="w-3.5 h-3.5 text-blue-500" />
                   Moisture Percentage (%)
                 </label>
@@ -254,23 +258,23 @@ export default function AddWastePage() {
                   max="100"
                   value={formData.moisturePercentage}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-500 outline-none" 
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium focus:ring-2 focus:ring-green-500 outline-none" 
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1.5">
                   Contamination Level
                 </label>
                 <select
                   name="contaminationLevel"
                   value={formData.contaminationLevel}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm focus:ring-2 focus:ring-green-500 outline-none bg-white"
+                  className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm text-gray-900 bg-white font-medium focus:ring-2 focus:ring-green-500 outline-none"
                 >
-                  <option value="Low">Low (Negligible impurities, &lt; 2%)</option>
-                  <option value="Medium">Medium (Sortable mixed impurities, 2-10%)</option>
-                  <option value="High">High (Requires specialized pre-cleaning)</option>
+                  <option value="Low" className="text-gray-900 bg-white">Low (Negligible impurities, &lt; 2%)</option>
+                  <option value="Medium" className="text-gray-900 bg-white">Medium (Sortable mixed impurities, 2-10%)</option>
+                  <option value="High" className="text-gray-900 bg-white">High (Requires specialized pre-cleaning)</option>
                 </select>
               </div>
             </div>
@@ -278,7 +282,7 @@ export default function AddWastePage() {
             {/* Location & Expected Price */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1.5">
                   Pickup Location / City *
                 </label>
                 <input 
@@ -287,13 +291,13 @@ export default function AddWastePage() {
                   placeholder="e.g. Tirupur, Tamil Nadu"
                   value={formData.location}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-500 outline-none" 
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium focus:ring-2 focus:ring-green-500 outline-none" 
                   required 
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                   <IndianRupee className="w-3.5 h-3.5 text-green-700" />
                   Expected Target Price (₹ / {formData.unit})
                 </label>
@@ -303,7 +307,7 @@ export default function AddWastePage() {
                   min="0"
                   value={formData.expectedPrice}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-500 outline-none" 
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium focus:ring-2 focus:ring-green-500 outline-none" 
                 />
               </div>
             </div>
@@ -311,7 +315,7 @@ export default function AddWastePage() {
             {/* Condition & Available Date */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1.5">
                   Material Condition *
                 </label>
                 <input 
@@ -320,14 +324,14 @@ export default function AddWastePage() {
                   placeholder="e.g. Dry, clean, baled, sorted"
                   value={formData.condition}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-500 outline-none" 
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium focus:ring-2 focus:ring-green-500 outline-none" 
                   required 
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-gray-500" />
                   Available Date / Batch Readiness
                 </label>
                 <input 
@@ -336,14 +340,14 @@ export default function AddWastePage() {
                   placeholder="e.g. Immediate, or 2026-10-01"
                   value={formData.availableDate}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-500 outline-none" 
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium focus:ring-2 focus:ring-green-500 outline-none" 
                 />
               </div>
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1.5">
                 Technical Description & Storage Context
               </label>
               <textarea 
@@ -352,15 +356,20 @@ export default function AddWastePage() {
                 onChange={handleChange}
                 rows={2}
                 placeholder="Details on generation process, fiber length, particle size, packaging, or moisture protection..."
-                className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-500 outline-none" 
+                className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm text-gray-900 bg-white placeholder:text-gray-400 font-medium focus:ring-2 focus:ring-green-500 outline-none" 
               />
             </div>
 
             {/* Waste Image Upload */}
             <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                Upload Waste Photo (For AI Vision Diagnostics)
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider">
+                  Material Photo (Optional)
+                </label>
+                <span className="text-[11px] text-emerald-800 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                  AI Analyzes with or without photo
+                </span>
+              </div>
               <input 
                 type="file" 
                 accept="image/*"
@@ -372,7 +381,7 @@ export default function AddWastePage() {
                 <div className="relative border border-gray-300 rounded-2xl overflow-hidden h-44 bg-gray-50 flex items-center justify-center">
                   <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
                   <button 
-                    type="button"
+                    type="button" 
                     onClick={() => { setImagePreview(null); setImageFile(null); if(fileInputRef.current) fileInputRef.current.value = ''; }}
                     className="absolute top-3 right-3 bg-white/90 hover:bg-white p-1.5 rounded-full text-red-600 shadow-md transition"
                   >
@@ -382,32 +391,45 @@ export default function AddWastePage() {
               ) : (
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-gray-300 rounded-2xl p-5 flex flex-col items-center justify-center bg-gray-50/70 text-gray-500 cursor-pointer hover:bg-emerald-50/50 hover:border-emerald-400 transition"
+                  className="border-2 border-dashed border-gray-300 rounded-2xl p-5 flex flex-col items-center justify-center bg-gray-50/70 text-gray-600 cursor-pointer hover:bg-emerald-50/50 hover:border-emerald-400 transition"
                 >
                   <Upload className="h-6 w-6 mb-1 text-emerald-600" />
-                  <span className="text-xs font-semibold text-gray-700">Click to upload material photo</span>
-                  <span className="text-[10px] text-gray-400">JPG, PNG up to 10MB</span>
+                  <span className="text-xs font-semibold text-gray-800">Click to upload material photo (optional)</span>
+                  <span className="text-[10px] text-gray-500">JPG, PNG up to 10MB • AI diagnostics works fully from properties if omitted</span>
                 </div>
               )}
             </div>
 
-            <button 
-              type="submit" 
-              disabled={loading || !formData.wasteType}
-              className="w-full py-3.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg shadow-green-600/20 transition flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="animate-spin h-5 w-5" />
-                  Running AI Waste Classification & Diagnostics...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-5 h-5 text-green-200" />
-                  Run AI Waste Analysis
-                </>
-              )}
-            </button>
+            {/* Action Buttons: Run AI Analysis & Quick Direct Save */}
+            <div className="space-y-2 pt-2">
+              <button 
+                type="submit" 
+                disabled={loading || !formData.wasteType}
+                className="w-full py-3.5 bg-green-700 hover:bg-green-800 text-white font-bold rounded-xl shadow-md hover:shadow-lg shadow-green-700/20 transition flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer text-sm"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="animate-spin h-5 w-5" />
+                    Running AI Waste Diagnostics & Valorization Engine...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5 text-green-200" />
+                    Run AI Waste Analysis & Find Buyers
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSaveListing('listings')}
+                disabled={publishing || !formData.wasteType}
+                className="w-full py-2.5 rounded-xl border border-gray-300 hover:bg-gray-100 text-gray-800 font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {publishing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Layers className="w-3.5 h-3.5 text-gray-600" />}
+                Save Directly to My Listings
+              </button>
+            </div>
           </form>
         </div>
 
@@ -430,7 +452,7 @@ export default function AddWastePage() {
                       AI Diagnostic Complete
                     </span>
                     <span className="text-[11px] text-emerald-700 font-semibold">
-                      Google Gemini Circular Intelligence
+                      CIRCULON AI Intelligence
                     </span>
                   </div>
                 </div>
@@ -521,11 +543,11 @@ export default function AddWastePage() {
                 * {aiResult.disclaimer}
               </div>
 
-              {/* Action Button: Find Compatible Buyers */}
-              <div className="pt-3 border-t border-gray-100">
+              {/* Action Buttons: Match Buyers or View in My Listings */}
+              <div className="pt-3 border-t border-gray-100 space-y-2">
                 <button
                   type="button"
-                  onClick={handleSaveAndFindBuyers}
+                  onClick={() => handleSaveListing('matches')}
                   disabled={publishing}
                   className="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm rounded-xl shadow-md hover:shadow-lg shadow-emerald-700/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
                 >
@@ -540,6 +562,16 @@ export default function AddWastePage() {
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSaveListing('listings')}
+                  disabled={publishing}
+                  className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 border border-gray-200"
+                >
+                  <Layers className="w-3.5 h-3.5 text-gray-600" />
+                  Save & View in My Listings
                 </button>
               </div>
             </motion.div>

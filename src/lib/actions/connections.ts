@@ -34,11 +34,8 @@ export async function sendConnectionRequest(buyerId: string, wasteId: string, me
       }
     }
 
-    // 2. Resolve buyer_id (maps registered enterprise profiles if known)
-    let targetBuyerId = buyerId
-    if (buyerId === 'buyer-greenpolymer-2' || buyerId?.toLowerCase().includes('greenpolymer')) {
-      targetBuyerId = '1d04eb58-fda7-4e34-9fa0-19e96f1d5ff2'
-    }
+    // 2. Resolve buyer_id
+    const targetBuyerId = buyerId;
 
     // 3. Attempt direct platform connection_requests insertion if IDs are valid UUIDs
     if (isValidUUID(targetBuyerId) && resolvedWasteId && isValidUUID(resolvedWasteId)) {

@@ -20,7 +20,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed">
-              Empowering circular economy ecosystems by connecting industrial waste streams directly with verified commercial buyers using Google Gemini AI.
+              Empowering circular economy ecosystems by connecting industrial waste streams directly with verified commercial buyers using AI.
             </p>
             <div className="text-xs text-gray-500">
               © {new Date().getFullYear()} CIRCULON Inc. All rights reserved.

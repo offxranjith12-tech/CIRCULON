@@ -277,7 +277,7 @@ export default function DriverDashboard() {
       </div>
 
       {/* Primary Focus: Active Assigned Shipment Workflow */}
-      {activeTrip && (
+      {activeTrip ? (
         <div className="bg-white rounded-3xl border-2 border-emerald-500/80 shadow-xl overflow-hidden">
           {/* Active Trip Header */}
           <div className="p-6 bg-gradient-to-r from-emerald-900 to-green-950 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -445,6 +445,12 @@ export default function DriverDashboard() {
             </div>
           </div>
         </div>
+      ) : (
+        <div className="bg-white rounded-3xl border border-gray-200 p-8 text-center text-gray-500">
+          <Truck className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+          <h3 className="text-base font-bold text-gray-900">No Active Trips Assigned</h3>
+          <p className="text-xs text-gray-400 mt-1">When new material transport deals are confirmed, assigned shipments will appear here.</p>
+        </div>
       )}
 
       {/* Shipment History & All Trips List */}
@@ -457,7 +463,12 @@ export default function DriverDashboard() {
         </div>
 
         <div className="divide-y divide-gray-100">
-          {trips.map(trip => (
+          {trips.length === 0 ? (
+            <div className="p-12 text-center text-sm text-gray-500">
+              No assigned trips or delivery history found.
+            </div>
+          ) : (
+            trips.map(trip => (
             <div key={trip.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50/70 transition-colors">
               <div>
                 <div className="flex items-center gap-2">
@@ -487,9 +498,10 @@ export default function DriverDashboard() {
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+          ))
+        )}
       </div>
+    </div>
 
       {/* Upload Delivery Proof Modal */}
       {uploadProofModal && (

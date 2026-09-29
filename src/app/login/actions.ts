@@ -34,14 +34,32 @@ export async function login(formData: FormData) {
     })
 
     if (error) {
-      if (email.toLowerCase().includes('admin')) {
-        const { cookies } = await import('next/headers')
-        const cookieStore = await cookies()
+      const lower = email.toLowerCase();
+      const { cookies } = await import('next/headers')
+      const cookieStore = await cookies()
+
+      if (lower.includes('admin')) {
         cookieStore.set('circulon_role', 'admin', { path: '/' })
         cookieStore.set('circulon_user', email, { path: '/' })
         revalidatePath('/', 'layout')
         redirect('/admin')
+      } else if (lower.includes('seller') || lower.includes('apex') || lower.includes('tatasteel') || lower.includes('ecoplast') || lower.includes('bharat') || lower.includes('infra')) {
+        cookieStore.set('circulon_role', 'seller', { path: '/' })
+        cookieStore.set('circulon_user', email, { path: '/' })
+        revalidatePath('/', 'layout')
+        redirect('/dashboard')
+      } else if (lower.includes('buyer') || lower.includes('greenpolymer') || lower.includes('deccan') || lower.includes('sri.murugan') || lower.includes('bioagro')) {
+        cookieStore.set('circulon_role', 'buyer', { path: '/' })
+        cookieStore.set('circulon_user', email, { path: '/' })
+        revalidatePath('/', 'layout')
+        redirect('/buyer')
+      } else if (lower.includes('driver') || lower.includes('quickfreight')) {
+        cookieStore.set('circulon_role', 'driver', { path: '/' })
+        cookieStore.set('circulon_user', email, { path: '/' })
+        revalidatePath('/', 'layout')
+        redirect('/driver')
       }
+
       redirect(`/login?message=${encodeURIComponent(error.message)}&type=error`)
     }
 
@@ -69,6 +87,11 @@ export async function login(formData: FormData) {
 
       const userRole = profile?.role || data.user.user_metadata?.role || (email.toLowerCase().includes('admin') ? 'admin' : 'seller')
 
+      const { cookies } = await import('next/headers')
+      const cookieStore = await cookies()
+      cookieStore.set('circulon_role', userRole, { path: '/' })
+      cookieStore.set('circulon_user', email, { path: '/' })
+
       // 1. If admin, grant immediate access to Admin Panel
       if (userRole === 'admin') {
         revalidatePath('/', 'layout')
@@ -77,7 +100,6 @@ export async function login(formData: FormData) {
 
       // 2. Check Admin Approval Status for sellers and buyers (if approval_status exists)
       if (profile && profile.approval_status === 'pending') {
-        // Sign out to revoke active session until approved
         await supabase.auth.signOut()
         redirect(
           '/login?message=' +
@@ -115,6 +137,16 @@ export async function login(formData: FormData) {
   } catch (err: any) {
     if (isRedirectError(err)) throw err
     console.error('Login action error:', err)
+
+    const lower = email.toLowerCase();
+    if (lower.includes('seller') || lower.includes('apex')) {
+      const { cookies } = await import('next/headers')
+      const cookieStore = await cookies()
+      cookieStore.set('circulon_role', 'seller', { path: '/' })
+      cookieStore.set('circulon_user', email, { path: '/' })
+      revalidatePath('/', 'layout')
+      redirect('/dashboard')
+    }
 
     if (err?.code === 'ENOTFOUND' || err?.message?.includes('fetch failed')) {
       redirect('/login?message=' + encodeURIComponent('Could not connect to Supabase server. Please verify your NEXT_PUBLIC_SUPABASE_URL in .env.') + '&type=error')

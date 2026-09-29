@@ -34,6 +34,9 @@ function LoginForm() {
   const [selectedRole, setSelectedRole] = useState<"seller" | "buyer" | "driver">("seller");
   const [isPending, startTransition] = useTransition();
 
+  const [signInEmail, setSignInEmail] = useState("");
+  const [signInPassword, setSignInPassword] = useState("");
+
   // ID Proof upload state
   const [idFile, setIdFile] = useState<File | null>(null);
   const [idPreview, setIdPreview] = useState<string | null>(null);
@@ -59,6 +62,10 @@ function LoginForm() {
 
   const handleSignInSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("circulon_session_active", "true");
+      localStorage.removeItem("circulon_site_closed");
+    }
     const formData = new FormData(e.currentTarget);
     startTransition(async () => {
       await login(formData);
@@ -67,6 +74,10 @@ function LoginForm() {
 
   const handleSignUpSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("circulon_session_active", "true");
+      localStorage.removeItem("circulon_site_closed");
+    }
     const formData = new FormData(e.currentTarget);
     formData.set("role", selectedRole);
     if (idFile) {
@@ -173,8 +184,10 @@ function LoginForm() {
                   type="email"
                   autoComplete="email"
                   required
+                  value={signInEmail}
+                  onChange={(e) => setSignInEmail(e.target.value)}
                   placeholder="contact@company.com"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition"
                 />
               </div>
             </div>
@@ -193,8 +206,10 @@ function LoginForm() {
                   type="password"
                   autoComplete="current-password"
                   required
+                  value={signInPassword}
+                  onChange={(e) => setSignInPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-900 bg-white placeholder:text-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition"
                 />
               </div>
             </div>
@@ -218,7 +233,7 @@ function LoginForm() {
               <button
                 type="button"
                 onClick={() => setActiveTab("signup")}
-                className="text-xs text-gray-500 hover:text-green-700 transition font-medium"
+                className="text-xs text-gray-500 hover:text-green-700 transition font-medium cursor-pointer"
               >
                 Need to register your company? <span className="font-bold text-green-700 underline">Create account</span>
               </button>

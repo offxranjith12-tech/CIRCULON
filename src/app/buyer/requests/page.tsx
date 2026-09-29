@@ -36,10 +36,10 @@ export default function BuyerRequestsPage() {
   // Driver Assignment Modal State
   const [selectedReqForDriver, setSelectedReqForDriver] = useState<any | null>(null);
   const [selectedPresetIndex, setSelectedPresetIndex] = useState<number>(0);
-  const [driverName, setDriverName] = useState(VERIFIED_FLEET_DRIVERS[0].driver_name);
-  const [driverPhone, setDriverPhone] = useState(VERIFIED_FLEET_DRIVERS[0].driver_phone);
-  const [vehicleNumber, setVehicleNumber] = useState(VERIFIED_FLEET_DRIVERS[0].vehicle_number);
-  const [transporter, setTransporter] = useState(VERIFIED_FLEET_DRIVERS[0].transporter);
+  const [driverName, setDriverName] = useState(VERIFIED_FLEET_DRIVERS[0]?.driver_name || "");
+  const [driverPhone, setDriverPhone] = useState(VERIFIED_FLEET_DRIVERS[0]?.driver_phone || "");
+  const [vehicleNumber, setVehicleNumber] = useState(VERIFIED_FLEET_DRIVERS[0]?.vehicle_number || "");
+  const [transporter, setTransporter] = useState(VERIFIED_FLEET_DRIVERS[0]?.transporter || "");
   const [pickupDate, setPickupDate] = useState(() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -70,12 +70,11 @@ export default function BuyerRequestsPage() {
       setPickupDate(existingDriver.pickup_date);
       setTransitNotes(existingDriver.notes || "");
     } else {
-      const preset = VERIFIED_FLEET_DRIVERS[0];
       setSelectedPresetIndex(0);
-      setDriverName(preset.driver_name);
-      setDriverPhone(preset.driver_phone);
-      setVehicleNumber(preset.vehicle_number);
-      setTransporter(preset.transporter);
+      setDriverName(VERIFIED_FLEET_DRIVERS[0]?.driver_name || "");
+      setDriverPhone(VERIFIED_FLEET_DRIVERS[0]?.driver_phone || "");
+      setVehicleNumber(VERIFIED_FLEET_DRIVERS[0]?.vehicle_number || "");
+      setTransporter(VERIFIED_FLEET_DRIVERS[0]?.transporter || "");
     }
   };
 

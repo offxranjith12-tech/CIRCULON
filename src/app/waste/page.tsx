@@ -22,12 +22,15 @@ import {
   Plus
 } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { SuitableBuyersModal } from "@/components/SuitableBuyersModal";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ManageWastePage() {
+  const searchParams = useSearchParams();
+  const urlFilter = searchParams ? searchParams.get("filter") : null;
   const [wastes, setWastes] = useState<WasteMaterial[]>([]);
-  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>(urlFilter || "all");
   const [selectedWasteForMatch, setSelectedWasteForMatch] = useState<WasteMaterial | null>(null);
   const [viewingListing, setViewingListing] = useState<WasteMaterial | null>(null);
   const [editingListing, setEditingListing] = useState<WasteMaterial | null>(null);
@@ -47,6 +50,14 @@ export default function ManageWastePage() {
   useEffect(() => {
     fetchWastes();
   }, []);
+
+  useEffect(() => {
+    if (urlFilter) {
+      setFilterStatus(urlFilter);
+    } else {
+      setFilterStatus("all");
+    }
+  }, [urlFilter]);
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this listing?")) {
@@ -70,6 +81,12 @@ export default function ManageWastePage() {
 
   const filteredWastes = wastes.filter(w => {
     if (filterStatus === "all") return true;
+    if (filterStatus === "drafts" || filterStatus === "pending") {
+      return w.status === "pending" || w.status === "archived";
+    }
+    if (filterStatus === "sold" || filterStatus === "completed") {
+      return w.status === "sold" || w.status === "completed";
+    }
     return w.status === filterStatus;
   });
 

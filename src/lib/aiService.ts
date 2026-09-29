@@ -437,17 +437,121 @@ const CIRCULAR_KNOWLEDGE_BASE: Record<string, {
     industries: ['Secondary Metallurgy', 'Automotive Foundries'],
     processing_steps: ['Chip shredding', 'Thermal drying', 'Briquetting & remelting'],
     co2_savings_kg: 9.20
+  },
+  paper: {
+    material: 'Corrugated Kraft & Packaging Trimmings',
+    category: 'Paper & Packaging',
+    recoveredMaterial: 'Recycled Unbleached Kraft Pulp',
+    confidence: 0.96,
+    qualityScore: 89,
+    purity: 93,
+    contamination: 'Low',
+    moistureRisk: 'Low',
+    reusePotential: 'High',
+    processingDifficulty: 'Low',
+    qualityFactors: [
+      'High natural unbleached softwood fiber length retention',
+      'Mill baled under controlled moisture conditions (<8%)',
+      'Free from wax coatings, polyethylene films, and hot-melt glue'
+    ],
+    contaminationFactors: [
+      'Negligible tape and staple traces removed via hydro-pulper ragger',
+      'Dry storage protected from rain and mold formation'
+    ],
+    opportunities: [
+      {
+        name: 'High-Burst Testliner & Corrugated Medium',
+        whySuitable: 'Long cellulose fibers yield high ring-crush and burst strength in outer box plies.',
+        processing: ['Hydropulping & screening', 'Centrifugal cleaning', 'Fourdrinier paper machine'],
+        feasibility: 96,
+        requiredQuality: 'Clean OCC Grade 11',
+        industry: 'Kraft Paper & Box Board Mills',
+        buyerCategory: 'Packaging & Board Mills',
+        valMin: 18,
+        valMax: 29,
+        co2Factor: 1.5
+      },
+      {
+        name: 'Molded Fiber Cushioning Inserts',
+        whySuitable: 'Biodegradable substitute for expanded polystyrene (EPS) foam cushions for electronics.',
+        processing: ['Pulp slurry preparation', 'Vacuum suction molding', 'Thermal drying press'],
+        feasibility: 92,
+        requiredQuality: 'Sorted Cardboard Fiber',
+        industry: 'Protective Packaging',
+        buyerCategory: 'Cushioning Molders',
+        valMin: 22,
+        valMax: 38,
+        co2Factor: 1.9
+      }
+    ],
+    recycling_methods: ['Continuous hydropulping', 'Pressure fractionation screening', 'Molded thermoforming'],
+    industries: ['Pulp & Paper', 'Protective Packaging', 'Cellulose Insulation'],
+    processing_steps: ['Bale wire cutting', 'Pulper disintegration', 'Centricleaning & de-inking', 'Sheet formation'],
+    co2_savings_kg: 1.55
+  },
+  slag: {
+    material: 'Granulated Blast Furnace Slag (GGBS)',
+    category: 'Minerals & Slag',
+    recoveredMaterial: 'Micronized Pozzolanic Slag Binder',
+    confidence: 0.97,
+    qualityScore: 93,
+    purity: 96,
+    contamination: 'Low',
+    moistureRisk: 'Low',
+    reusePotential: 'High',
+    processingDifficulty: 'Low',
+    qualityFactors: [
+      'Glassy vitrified phase content >90%',
+      'Basic chemical index (CaO + MgO) / SiO2 > 1.0',
+      'Uniform granulated water-quenched particle geometry'
+    ],
+    contaminationFactors: [
+      'Zero combustible matter or sulfur trioxide exceedance',
+      'Low free moisture (<1%) after dry magnetic separation'
+    ],
+    opportunities: [
+      {
+        name: 'Low-Carbon Geopolymer Marine Armor Concrete',
+        whySuitable: 'Provides near-zero clinker CO2 emissions and superior chemical resistance to sulfate and seawater attacks.',
+        processing: ['Dry ball mill grinding to 450 m2/kg Blaine', 'Alkali-silicate activation blending'],
+        feasibility: 95,
+        requiredQuality: 'Grade 100 GGBS',
+        industry: 'Coastal Infrastructure & Precast Concrete',
+        buyerCategory: 'Precast Concrete & RMC Plants',
+        valMin: 6,
+        valMax: 14,
+        co2Factor: 0.88
+      },
+      {
+        name: 'Portland Slag Cement (PSC) Clinker Extender',
+        whySuitable: 'Interground at 40-60% ratios to reduce hydration heat in mass foundation concrete.',
+        processing: ['Vertical roller mill intergrinding with clinker and gypsum'],
+        feasibility: 98,
+        requiredQuality: 'Granulated Vitrified Slag',
+        industry: 'Cement Manufacturing',
+        buyerCategory: 'Cement Plants & Grinding Units',
+        valMin: 5,
+        valMax: 11,
+        co2Factor: 0.82
+      }
+    ],
+    recycling_methods: ['Magnetic metallic separation', 'Rotary drying', 'High-fineness ball mill grinding'],
+    industries: ['Green Cement', 'Precast Concrete', 'Road Base Construction'],
+    processing_steps: ['Magnetic tramp iron extraction', 'Thermal moisture regulation', 'Micronizing to 4500 Blaine'],
+    co2_savings_kg: 0.85
   }
 };
 
 function resolveKnowledgeBase(waste: WasteData) {
-  const query = `${waste.wasteType} ${waste.condition || ''} ${waste.category || ''}`.toLowerCase();
+  const query = `${waste.wasteType || ''} ${waste.condition || ''} ${waste.category || ''} ${waste.description || ''}`.toLowerCase();
   
   if (query.includes('rice') || query.includes('paddy') || query.includes('husk')) return CIRCULAR_KNOWLEDGE_BASE.rice;
   if (query.includes('bagasse') || query.includes('sugar') || query.includes('cane')) return CIRCULAR_KNOWLEDGE_BASE.bagasse;
   if (query.includes('coir') || query.includes('coconut') || query.includes('pith')) return CIRCULAR_KNOWLEDGE_BASE.coir;
-  if (query.includes('metal') || query.includes('aluminium') || query.includes('steel') || query.includes('iron') || query.includes('slag')) return CIRCULAR_KNOWLEDGE_BASE.metal;
-  if (query.includes('plastic') || query.includes('hdpe') || query.includes('polymer') || query.includes('pet') || query.includes('regrind')) return CIRCULAR_KNOWLEDGE_BASE.plastic;
+  if (query.includes('slag') || query.includes('ash') || query.includes('fly ash') || query.includes('concrete') || query.includes('sand') || query.includes('aggregate') || query.includes('mineral')) return CIRCULAR_KNOWLEDGE_BASE.slag;
+  if (query.includes('paper') || query.includes('cardboard') || query.includes('kraft') || query.includes('carton') || query.includes('corrugated') || query.includes('box')) return CIRCULAR_KNOWLEDGE_BASE.paper;
+  if (query.includes('metal') || query.includes('aluminium') || query.includes('steel') || query.includes('iron') || query.includes('copper') || query.includes('alloy') || query.includes('foundry')) return CIRCULAR_KNOWLEDGE_BASE.metal;
+  if (query.includes('plastic') || query.includes('hdpe') || query.includes('polymer') || query.includes('pet') || query.includes('regrind') || query.includes('ldpe') || query.includes('polypropylene')) return CIRCULAR_KNOWLEDGE_BASE.plastic;
   return CIRCULAR_KNOWLEDGE_BASE.cotton;
 }
 
@@ -456,31 +560,50 @@ function buildQualityAssessment(base: any, waste: WasteData): MaterialQualityAss
   const moistureRisk = moisture > 12 ? 'High' : moisture > 8 ? 'Medium' : 'Low';
   const contaminationRisk = (waste.contaminationLevel as any) || base.contamination || 'Low';
   
-  // Calculate deterministic quality score
+  // Calculate deterministic quality score factoring in all declared parameters
   let score = base.qualityScore || 85;
-  if (moistureRisk === 'High') score -= 8;
+  if (moistureRisk === 'High') score -= 10;
+  else if (moistureRisk === 'Medium') score -= 4;
+  else score += 2; // Dry bonus
+
   if (contaminationRisk === 'High') score -= 14;
   else if (contaminationRisk === 'Medium') score -= 6;
+  else score += 3; // Clean bonus
+
+  if (waste.condition && /clean|dry|baled|sorted/i.test(waste.condition)) {
+    score += 2;
+  }
+
   score = Math.max(50, Math.min(98, score));
+
+  // Dynamic quality factors reflecting entered properties
+  const dynamicQualityFactors = [
+    `Declared condition: "${waste.condition || 'Dry and clean'}" conforms to industrial feedstock criteria`,
+    `Moisture level at ${moisture}% provides safe preservation with ${moistureRisk.toLowerCase()} moisture risk`,
+    `Contamination level rated "${contaminationRisk}" complies with secondary recovery standards`,
+    ...(waste.description ? [`Technical declaration verified: "${waste.description.slice(0, 70)}..."`] : base.qualityFactors)
+  ];
+
+  const dynamicContaminationFactors = [
+    contaminationRisk === 'Low'
+      ? 'Negligible foreign matter (<2%) — direct entry to primary processing line'
+      : contaminationRisk === 'Medium'
+      ? 'Standard mixed impurities (2-10%) — routine automated magnetic/sieving separation required'
+      : 'High contamination declared — pre-cleaning and de-contamination stage required before processing',
+    moisture > 10 ? 'Requires moisture barrier transport packaging' : 'Standard dry freight haulage compliant'
+  ];
 
   return {
     qualityScore: score,
-    purityPercentage: base.purity || 90,
+    purityPercentage: contaminationRisk === 'Low' ? 95 : contaminationRisk === 'Medium' ? 88 : 78,
     contaminationRisk: contaminationRisk,
     moistureRisk: moistureRisk,
-    reusePotential: base.reusePotential || 'High',
-    processingDifficulty: base.processingDifficulty || 'Low',
-    aiConfidence: base.confidence || 0.93,
+    reusePotential: score >= 80 ? 'High' : 'Medium',
+    processingDifficulty: contaminationRisk === 'High' ? 'Medium' : 'Low',
+    aiConfidence: base.confidence || 0.94,
     isPreliminary: true,
-    qualityFactors: base.qualityFactors || [
-      'High visual consistency with standard industrial feedstock',
-      'No hazardous cross-contaminants identified in initial declaration',
-      'Homogeneous batch packaging suitable for mechanical recycling'
-    ],
-    contaminationFactors: base.contaminationFactors || [
-      'Standard particulate dust within permissible mechanical limits',
-      'Trace moisture requires dry-storage transit protocols'
-    ],
+    qualityFactors: dynamicQualityFactors,
+    contaminationFactors: dynamicContaminationFactors,
     moisturePercentage: moisture,
     conditionDescription: waste.condition || 'Clean, sorted, baled',
     recommendedProcessing: base.processing_steps || ['Sorting & inspection', 'De-dusting', 'Size reduction', 'Baling'],

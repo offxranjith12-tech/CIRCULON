@@ -90,88 +90,11 @@ export async function getMarketOpportunities(): Promise<MarketOpportunity[]> {
         };
       });
 
-      if (results.length > 0) return results;
+      return results;
     }
   } catch {
-    // Graceful fallback to verified database-backed benchmarks
+    // Graceful fallback
   }
 
-  // Verified dataset based on CIRCULON buyer requirements
-  return [
-    {
-      id: 'market-opp-textile-1',
-      materialName: 'Cotton Textile Comber Waste',
-      category: 'Textiles',
-      demandKg: 12000,
-      availableSupplyKg: 4500,
-      potentialBuyersCount: 8,
-      preferredPriceMin: 32,
-      preferredPriceMax: 45,
-      opportunityLevel: 'HIGH',
-      urgency: 'Immediate',
-      topDemandClusters: ['Coimbatore', 'Tirupur', 'Karur'],
-      dataSource: 'Based on CIRCULON buyer requirements',
-      lastUpdated: new Date().toISOString()
-    },
-    {
-      id: 'market-opp-hdpe-2',
-      materialName: 'High-Density Polyethylene (HDPE) Regrind',
-      category: 'Plastics & Polymers',
-      demandKg: 28000,
-      availableSupplyKg: 12000,
-      potentialBuyersCount: 6,
-      preferredPriceMin: 28,
-      preferredPriceMax: 38,
-      opportunityLevel: 'HIGH',
-      urgency: 'Immediate',
-      topDemandClusters: ['Chennai', 'Coimbatore', 'Bengaluru'],
-      dataSource: 'Based on CIRCULON buyer requirements',
-      lastUpdated: new Date().toISOString()
-    },
-    {
-      id: 'market-opp-bagasse-3',
-      materialName: 'Sugarcane Bagasse Fiber',
-      category: 'Agricultural Residue',
-      demandKg: 45000,
-      availableSupplyKg: 25000,
-      potentialBuyersCount: 5,
-      preferredPriceMin: 9,
-      preferredPriceMax: 18,
-      opportunityLevel: 'MODERATE',
-      urgency: 'Within 14 Days',
-      topDemandClusters: ['Erode', 'Namakkal', 'Bengaluru'],
-      dataSource: 'Based on CIRCULON buyer requirements',
-      lastUpdated: new Date().toISOString()
-    },
-    {
-      id: 'market-opp-rha-4',
-      materialName: 'Rice Husk Ash (Pozzolanic Silica)',
-      category: 'Agricultural Residue',
-      demandKg: 35000,
-      availableSupplyKg: 15000,
-      potentialBuyersCount: 7,
-      preferredPriceMin: 7,
-      preferredPriceMax: 15,
-      opportunityLevel: 'HIGH',
-      urgency: 'Immediate',
-      topDemandClusters: ['Salem', 'Thanjavur', 'Trichy'],
-      dataSource: 'Based on CIRCULON buyer requirements',
-      lastUpdated: new Date().toISOString()
-    },
-    {
-      id: 'market-opp-coir-5',
-      materialName: 'Coconut Coir Pith Blocks',
-      category: 'Biomass & Agriculture',
-      demandKg: 30000,
-      availableSupplyKg: 18000,
-      potentialBuyersCount: 4,
-      preferredPriceMin: 14,
-      preferredPriceMax: 24,
-      opportunityLevel: 'MODERATE',
-      urgency: 'Flexible',
-      topDemandClusters: ['Pollachi', 'Kochi', 'Bengaluru'],
-      dataSource: 'Based on CIRCULON buyer requirements',
-      lastUpdated: new Date().toISOString()
-    }
-  ];
+  return [];
 }

@@ -28,7 +28,9 @@ import { calculateMatches, type MatchResult } from "@/lib/matching";
 import { getBuyers } from "@/lib/actions/buyers";
 import { draftOutreachMessage } from "@/lib/actions/ai";
 import { sendConnectionRequest } from "@/lib/actions/connections";
+import { sendMessage } from "@/lib/actions/messages";
 import { createDeal } from "@/lib/actions/deals";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SuitableBuyersModalProps {
@@ -95,6 +97,15 @@ export function SuitableBuyersModal({
     setSendingId(buyerId);
     try {
       const msg = drafts[buyerId] || `Hello, we have ${quantity.toLocaleString()} KG of ${materialName} available at our facility. Please review our supply proposal.`;
+      
+      // Dispatch direct message so it creates a chat thread in /messages for both parties
+      try {
+        await sendMessage(buyerId, msg);
+      } catch (msgErr) {
+        console.warn("Direct chat message dispatch note:", msgErr);
+      }
+
+      // Also register connection request for enterprise buyer procurement desk
       const res = await sendConnectionRequest(buyerId, wasteId || "", msg);
       if (res && res.success === false) {
         alert(res.error || "Failed to send proposal. Please try again.");
@@ -452,33 +463,40 @@ export function SuitableBuyersModal({
                             )}
                           </button>
 
-                          <button
-                            type="button"
-                            onClick={() => handleSendProposal(b.id)}
-                            disabled={sendingId === b.id || hasSent}
-                            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition shadow-xs cursor-pointer ${
-                              hasSent
-                                ? "bg-gray-100 text-green-700 border border-green-300"
-                                : "bg-green-700 hover:bg-green-800 text-white shadow-green-700/20"
-                            }`}
-                          >
-                            {sendingId === b.id ? (
-                              <>
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                Sending...
-                              </>
-                            ) : hasSent ? (
-                              <>
+                          {hasSent ? (
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold bg-green-50 text-green-700 border border-green-200">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
-                                Proposal Sent ✓
-                              </>
-                            ) : (
-                              <>
-                                <Send className="w-3.5 h-3.5" />
-                                Dispatch Proposal
-                              </>
-                            )}
-                          </button>
+                                Proposal Dispatched ✓
+                              </span>
+                              <Link
+                                href="/messages"
+                                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs transition"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                Chat in Messages →
+                              </Link>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleSendProposal(b.id)}
+                              disabled={sendingId === b.id}
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-green-700 hover:bg-green-800 text-white shadow-green-700/20 shadow-xs cursor-pointer transition disabled:opacity-50"
+                            >
+                              {sendingId === b.id ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  Sending...
+                                </>
+                              ) : (
+                                <>
+                                  <Send className="w-3.5 h-3.5" />
+                                  Dispatch Proposal
+                                </>
+                              )}
+                            </button>
+                          )}
                         </div>
                       </div>
 

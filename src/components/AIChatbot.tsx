@@ -105,7 +105,7 @@ export function AIChatbot() {
             Ask CIRCULON AI
           </span>
           <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-white/20 text-white border border-white/30">
-            Gemini
+            AI
           </span>
         </button>
       )}

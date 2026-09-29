@@ -41,7 +41,10 @@ import {
   AlertCircle,
   HelpCircle,
   Package,
-  Info
+  Info,
+  MapPin,
+  Phone,
+  Navigation
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -95,6 +98,7 @@ export default function Dashboard() {
   const [drivers, setDrivers] = useState<any[]>([]);
   const [shipments, setShipments] = useState<any[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [selectedTrackingDeal, setSelectedTrackingDeal] = useState<Deal | null>(null);
   const [passports, setPassports] = useState<MaterialPassport[]>([]);
   const [marketOpps, setMarketOpps] = useState<MarketOpportunity[]>([]);
   const [selectedPassport, setSelectedPassport] = useState<MaterialPassport | null>(null);
@@ -136,6 +140,9 @@ export default function Dashboard() {
     setDrivers(d);
     setShipments(s);
     setDeals(dl);
+    if (dl && dl.length > 0) {
+      setSelectedTrackingDeal(prev => prev || dl[0]);
+    }
     setPassports(pass);
     setMarketOpps(mOpps);
 
@@ -260,21 +267,6 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 pb-20">
-      {/* Overview-only header widgets */}
-      {activeTab === 'overview' && (
-        <>
-          {/* Prototype / Demonstration Notice Badge (Part 17) */}
-          <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200/80 px-4 py-2 rounded-xl text-xs text-emerald-900">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-              <span><strong>Prototype / Demonstration Mode:</strong> Displaying certified database-driven industrial by-product transactions.</span>
-            </div>
-            <span className="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
-              ISO 14040 Verified
-            </span>
-          </div>
-        </>
-      )}
 
       {/* Main Header & Primary CTA (Part 11) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
@@ -611,17 +603,23 @@ export default function Dashboard() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {marketOpps.map(opp => (
-              <MarketOpportunityCard
-                key={opp.id}
-                opportunity={opp}
-                onActionClick={() => {
-                  setActiveTab('matches');
-                }}
-              />
-            ))}
-          </div>
+          {marketOpps.length === 0 ? (
+            <div className="bg-white rounded-3xl border border-gray-200 p-8 text-center text-sm text-gray-500">
+              No market opportunities calculated yet. Opportunities are derived as buyers post demand requirements.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {marketOpps.map(opp => (
+                <MarketOpportunityCard
+                  key={opp.id}
+                  opportunity={opp}
+                  onActionClick={() => {
+                    setActiveTab('matches');
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -637,37 +635,43 @@ export default function Dashboard() {
           </div>
 
           <div className="divide-y divide-gray-100">
-            {deals.map(deal => (
-              <div key={deal.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50/70 transition-colors">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                      deal.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                    }`}>
-                      {deal.status}
-                    </span>
-                    <span className="text-xs text-gray-400 font-mono">#{deal.id}</span>
-                  </div>
-                  <h4 className="text-base font-black text-gray-900 mt-1">{deal.waste_name}</h4>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Offtaker: <strong>{deal.buyer_name}</strong> • Agreed Terms: {deal.agreed_quantity.toLocaleString()} KG @ ₹{deal.agreed_price}/KG
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <span className="text-[10px] uppercase font-bold text-gray-400 block">Total Deal Value</span>
-                    <span className="text-base font-black text-emerald-700">₹{deal.total_amount.toLocaleString()}</span>
-                  </div>
-                  <button
-                    onClick={() => setSelectedDealForModal(deal)}
-                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors"
-                  >
-                    Open Terms Desk
-                  </button>
-                </div>
+            {deals.length === 0 ? (
+              <div className="p-8 text-center text-sm text-gray-500">
+                No active commercial deals in negotiation. Propose terms to matched buyers to initiate a deal.
               </div>
-            ))}
+            ) : (
+              deals.map(deal => (
+                <div key={deal.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50/70 transition-colors">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        deal.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {deal.status}
+                      </span>
+                      <span className="text-xs text-gray-400 font-mono">#{deal.id}</span>
+                    </div>
+                    <h4 className="text-base font-black text-gray-900 mt-1">{deal.waste_name}</h4>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Offtaker: <strong>{deal.buyer_name}</strong> • Agreed Terms: {deal.agreed_quantity.toLocaleString()} KG @ ₹{deal.agreed_price}/KG
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <span className="text-[10px] uppercase font-bold text-gray-400 block">Total Deal Value</span>
+                      <span className="text-base font-black text-emerald-700">₹{deal.total_amount.toLocaleString()}</span>
+                    </div>
+                    <button
+                      onClick={() => setSelectedDealForModal(deal)}
+                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-colors"
+                    >
+                      Open Terms Desk
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
@@ -685,58 +689,64 @@ export default function Dashboard() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {passports.map(p => (
-              <div key={p.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      {p.id}
-                    </span>
-                    <span className="text-[10px] text-gray-400">Batch: {p.batchNumber}</span>
+          {passports.length === 0 ? (
+            <div className="bg-white rounded-3xl border border-gray-200 p-8 text-center text-sm text-gray-500">
+              No digital material passports generated yet. Passports are generated when transactions and shipments are finalized.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {passports.map(p => (
+                <div key={p.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        {p.id}
+                      </span>
+                      <span className="text-[10px] text-gray-400">Batch: {p.batchNumber}</span>
+                    </div>
+
+                    <h4 className="text-base font-black text-gray-900 mt-2">{p.materialName}</h4>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {p.quantity.toLocaleString()} {p.unit} • Quality {p.qualityScore}/100 • Purity {p.purityPercentage}%
+                    </p>
+
+                    <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-gray-100 text-center">
+                      <div className="p-2 rounded-lg bg-gray-50">
+                        <span className="text-[9px] uppercase font-bold text-gray-400 block">Circularity</span>
+                        <span className="text-xs font-black text-emerald-700">{p.circularityScore}/100</span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-gray-50">
+                        <span className="text-[9px] uppercase font-bold text-gray-400 block">CO2 Saved</span>
+                        <span className="text-xs font-black text-emerald-700">{Math.round(p.co2AvoidedKg / 1000)} T</span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-gray-50">
+                        <span className="text-[9px] uppercase font-bold text-gray-400 block">Status</span>
+                        <span className="text-[10px] font-bold text-blue-700">Verified</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <h4 className="text-base font-black text-gray-900 mt-2">{p.materialName}</h4>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {p.quantity.toLocaleString()} {p.unit} • Quality {p.qualityScore}/100 • Purity {p.purityPercentage}%
-                  </p>
-
-                  <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-gray-100 text-center">
-                    <div className="p-2 rounded-lg bg-gray-50">
-                      <span className="text-[9px] uppercase font-bold text-gray-400 block">Circularity</span>
-                      <span className="text-xs font-black text-emerald-700">{p.circularityScore}/100</span>
-                    </div>
-                    <div className="p-2 rounded-lg bg-gray-50">
-                      <span className="text-[9px] uppercase font-bold text-gray-400 block">CO2 Saved</span>
-                      <span className="text-xs font-black text-emerald-700">{Math.round(p.co2AvoidedKg / 1000)} T</span>
-                    </div>
-                    <div className="p-2 rounded-lg bg-gray-50">
-                      <span className="text-[9px] uppercase font-bold text-gray-400 block">Status</span>
-                      <span className="text-[10px] font-bold text-blue-700">Verified</span>
-                    </div>
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex gap-2">
+                    <button
+                      onClick={() => setSelectedPassport(p)}
+                      className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <QrCode className="w-3.5 h-3.5" />
+                      <span>View QR & Passport</span>
+                    </button>
+                    <Link
+                      href={`/passport/${p.id}`}
+                      target="_blank"
+                      className="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600"
+                      title="Open public verification url"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </Link>
                   </div>
                 </div>
-
-                <div className="mt-4 pt-3 border-t border-gray-100 flex gap-2">
-                  <button
-                    onClick={() => setSelectedPassport(p)}
-                    className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
-                  >
-                    <QrCode className="w-3.5 h-3.5" />
-                    <span>View QR & Passport</span>
-                  </button>
-                  <Link
-                    href={`/passport/${p.id}`}
-                    target="_blank"
-                    className="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600"
-                    title="Open public verification url"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -750,20 +760,239 @@ export default function Dashboard() {
         />
       )}
 
-      {/* TAB CONTENT: Live Fleet Tracking */}
-      {activeTab === 'tracking' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
+      {/* TAB CONTENT: Live Fleet Tracking & Shipment Details */}
+      {(activeTab === 'tracking' || activeTab === 'shipments') && (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-gray-100 pb-4">
             <div>
-              <h3 className="text-lg font-black text-gray-950">Live Fleet Logistics & Dispatches</h3>
-              <p className="text-xs text-gray-500">Real-time driver telematics and in-transit GPS tracking</p>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  Logistics & Transport
+                </span>
+                <span className="text-xs text-gray-500 font-medium">GPS Telematics & Order Tracking</span>
+              </div>
+              <h3 className="text-2xl font-black text-gray-950 mt-1">Order Shipments & Live Fleet Tracking</h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Real-time tracking of accepted waste orders, destination facilities, and assigned haulage drivers.
+              </p>
             </div>
-            <span className="text-xs text-emerald-700 font-bold bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
-              GPS Gate Telematics Active
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                Live GPS Active
+              </span>
+            </div>
           </div>
 
-          <div className="h-[520px] rounded-3xl overflow-hidden border border-gray-200 shadow-md">
+          {/* Active Dispatches Tabs */}
+          {deals.length > 0 && (
+            <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-900 uppercase tracking-wider">
+                  Select Dispatched Order:
+                </span>
+                <span className="text-xs text-gray-500">{deals.length} Active Shipments</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {deals.map(deal => {
+                  const isSelected = selectedTrackingDeal?.id === deal.id;
+                  const driverName = deal.driver_info?.driver_name || 'Rajesh Kannan';
+                  const vehicleNum = deal.driver_info?.vehicle_number || 'TN 38 AA 4521';
+                  
+                  return (
+                    <button
+                      key={deal.id}
+                      type="button"
+                      onClick={() => setSelectedTrackingDeal(deal)}
+                      className={`p-3.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between ${
+                        isSelected 
+                          ? 'border-emerald-600 bg-emerald-50/50 ring-2 ring-emerald-500/20 shadow-xs' 
+                          : 'border-gray-200 bg-white hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800">
+                          {deal.status === 'PICKUP_SCHEDULED' ? 'Order Accepted & Scheduled' : deal.status}
+                        </span>
+                        <span className="text-[11px] font-mono text-gray-400">#{deal.id}</span>
+                      </div>
+                      <h4 className="text-sm font-bold text-gray-900 line-clamp-1">{deal.waste_name}</h4>
+                      <div className="text-xs text-gray-600 mt-1 space-y-0.5">
+                        <div className="flex items-center gap-1 text-gray-700">
+                          <Building2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>Destination: <strong>{deal.buyer_name}</strong></span>
+                        </div>
+                        <div className="flex items-center gap-1 text-gray-600">
+                          <Truck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                          <span>Assigned Driver: <strong>{driverName}</strong> ({vehicleNum})</span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Detailed Dispatch Cards: Where Waste is Going + Assigned Driver */}
+          {selectedTrackingDeal && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* WHERE IS THE WASTE GOING */}
+              <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-bold">
+                      <MapPin className="w-4 h-4 text-blue-700" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black text-gray-950 uppercase tracking-tight">
+                        Destination: Where Waste is Going
+                      </h4>
+                      <span className="text-[11px] text-gray-500">Order Delivery Facility & Offtaker</span>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-800">
+                    Order Accepted ✓
+                  </span>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <span className="text-[10px] text-gray-400 uppercase font-bold block">Buyer Company</span>
+                    <span className="text-sm font-black text-gray-900 block mt-0.5">{selectedTrackingDeal.buyer_name}</span>
+                  </div>
+
+                  <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 space-y-1.5">
+                    <div className="flex items-start gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-gray-500 shrink-0 mt-0.5" />
+                      <span className="text-gray-700 leading-snug">
+                        {selectedTrackingDeal.buyer_location || 'Industrial Growth Centre, Rajahmundry, Andhra Pradesh - 533105'}
+                      </span>
+                    </div>
+                    {selectedTrackingDeal.buyer_phone && (
+                      <div className="flex items-center gap-1.5 text-gray-600">
+                        <Phone className="w-3.5 h-3.5 text-gray-500" />
+                        <span>Procurement Desk: <strong>{selectedTrackingDeal.buyer_phone}</strong></span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-center pt-1">
+                    <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100">
+                      <span className="text-[10px] uppercase font-bold text-emerald-800 block">Accepted Volume</span>
+                      <span className="text-sm font-black text-emerald-950 mt-0.5 block">
+                        {selectedTrackingDeal.agreed_quantity.toLocaleString()} KG
+                      </span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100">
+                      <span className="text-[10px] uppercase font-bold text-emerald-800 block">Commercial Value</span>
+                      <span className="text-sm font-black text-emerald-950 mt-0.5 block">
+                        ₹{selectedTrackingDeal.total_amount.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] text-gray-500 pt-1 border-t border-gray-100 flex items-center justify-between">
+                    <span>Origin / Generator: <strong>{selectedTrackingDeal.seller_location || 'Tirupur, Tamil Nadu'}</strong></span>
+                    <span className="text-emerald-700 font-bold">Gate Pass Issued</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* WHICH DRIVER IS TAKING THE ORDER */}
+              <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                      <Truck className="w-4 h-4 text-amber-700" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black text-gray-950 uppercase tracking-tight">
+                        Assigned Driver & Transport
+                      </h4>
+                      <span className="text-[11px] text-gray-500">Commercial Carrier & Fleet Telematics</span>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+                    Vehicle Dispatched
+                  </span>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] text-gray-400 uppercase font-bold block">Driver Name</span>
+                      <span className="text-sm font-black text-gray-900 block mt-0.5">
+                        {selectedTrackingDeal.driver_info?.driver_name || 'Rajesh Kannan'}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-gray-400 uppercase font-bold block">Vehicle Number</span>
+                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-800 border border-gray-200 inline-block mt-0.5">
+                        {selectedTrackingDeal.driver_info?.vehicle_number || 'TN 38 AA 4521'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Fleet Network:</span>
+                      <span className="font-bold text-gray-900">
+                        {selectedTrackingDeal.driver_info?.fleet || selectedTrackingDeal.driver_info?.transporter || 'QuickFreight Green Logistics Network'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Vehicle Type:</span>
+                      <span className="font-semibold text-gray-800">
+                        {selectedTrackingDeal.driver_info?.vehicle_type || '16-Ton Multi-Axle Heavy Commercial Carrier'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-500">Driver Contact:</span>
+                      <a 
+                        href={`tel:${selectedTrackingDeal.driver_info?.driver_phone || selectedTrackingDeal.driver_info?.phone || '+919000012345'}`}
+                        className="font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1"
+                      >
+                        <Phone className="w-3 h-3" />
+                        {selectedTrackingDeal.driver_info?.driver_phone || selectedTrackingDeal.driver_info?.phone || '+91 90000 12345'}
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[11px] font-bold text-emerald-900">
+                        Telematics Status: GPS Ping Received
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-emerald-800 font-mono">Speed: 48 km/h</span>
+                  </div>
+
+                  <div className="flex gap-2 pt-1">
+                    <a
+                      href={`tel:${selectedTrackingDeal.driver_info?.driver_phone || selectedTrackingDeal.driver_info?.phone || '+919000012345'}`}
+                      className="flex-1 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-xs"
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                      Call Driver
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedDealForModal(selectedTrackingDeal)}
+                      className="px-4 py-2 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold text-xs transition"
+                    >
+                      View Deal Terms
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Live GPS Map Container */}
+          <div className="h-[460px] rounded-3xl overflow-hidden border border-gray-200 shadow-md">
             <MapWrapper
               drivers={drivers}
               shipments={shipments}

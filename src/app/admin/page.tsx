@@ -507,16 +507,6 @@ function AdminContent() {
       {/* Prototype / Demonstration Notice Badge & Admin Quick Actions Strip - Only on Overview */}
       {activeTab === 'overview' && (
         <>
-          <div className="flex items-center justify-between bg-purple-50 border border-purple-200/80 px-4 py-2 rounded-xl text-xs text-purple-950">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse" />
-              <span><strong>Prototype / Demonstration Mode:</strong> Administrative management of live and certified circular economy transactions.</span>
-            </div>
-            <span className="text-[10px] uppercase font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded">
-              Root Admin Authority
-            </span>
-          </div>
-
           <div className="bg-gradient-to-r from-purple-950 via-gray-950 to-green-950 text-white rounded-2xl p-4 sm:p-5 shadow-lg border border-purple-800/40">
             <span className="text-[10px] font-mono uppercase tracking-widest text-purple-400 font-bold block mb-2.5">
               Admin Quick Actions
@@ -676,7 +666,7 @@ function AdminContent() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Cpu className="w-5 h-5 text-indigo-600" />
-                  <h3 className="font-black text-gray-950 text-sm">Gemini AI Valorization Monitor</h3>
+                  <h3 className="font-black text-gray-950 text-sm">AI Valorization Monitor</h3>
                 </div>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-200">
                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -687,7 +677,7 @@ function AdminContent() {
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between text-xs p-3 bg-gray-50 rounded-xl">
                   <span className="text-gray-500">Model Engine:</span>
-                  <span className="font-bold text-gray-900">Google Gemini 1.5 / Flash</span>
+                  <span className="font-bold text-gray-900">CIRCULON AI / Core</span>
                 </div>
                 <div className="flex items-center justify-between text-xs p-3 bg-gray-50 rounded-xl">
                   <span className="text-gray-500">Inference Latency:</span>
@@ -1811,7 +1801,7 @@ function AdminContent() {
                 <h2 className="text-xl font-black text-gray-950">AI Diagnostic & Marketplace Intelligence</h2>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Real-time metrics on Gemini AI stream analysis, detection accuracy, and marketplace transactions.
+                Real-time metrics on AI stream analysis, detection accuracy, and marketplace transactions.
               </p>
             </div>
             <div className="flex items-center gap-2">

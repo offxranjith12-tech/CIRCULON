@@ -41,9 +41,9 @@ export default function AboutPage() {
           <div className="w-12 h-12 rounded-xl bg-green-100 text-green-700 flex items-center justify-center font-bold">
             <Sparkles className="w-6 h-6" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Powered by Google Gemini</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Powered by Advanced AI</h2>
           <p className="text-gray-600 leading-relaxed">
-            We use Google Gemini 2.5 Flash to automatically interpret industrial materials, identify standard international classifications, and discover cross-industry compatibility in milliseconds.
+            We use Advanced AI models to automatically interpret industrial materials, identify standard international classifications, and discover cross-industry compatibility in milliseconds.
           </p>
           <p className="text-gray-600 leading-relaxed">
             Combined with our proprietary freight and margin calculation algorithms, sellers see transparent opportunity scores and net value estimates upfront.

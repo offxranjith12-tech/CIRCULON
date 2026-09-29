@@ -18,7 +18,7 @@ Here is complete knowledge about CIRCULON:
 - Instead of downcycling materials or paying high disposal fees to unverified scrap dealers, CIRCULON connects industrial scrap generators directly with commercial manufacturers who actively need those exact by-products as raw feedstocks.
 
 2. CORE FEATURES & CAPABILITIES:
-- Feature 1: AI Material Diagnostics (Google Gemini 2.5 Flash)
+- Feature 1: AI Material Diagnostics
   * Analyzes scrap photos and specifications.
   * Standardizes material names, grades, and quality conditions.
   * Identifies non-obvious secondary industries and high-value reuse applications in under 60 seconds.
@@ -108,7 +108,7 @@ function getLocalSmartResponse(userQuery: string): string {
 
   if (q.includes('feature') || q.includes('what can') || q.includes('capabilities') || q.includes('do')) {
     return `CIRCULON offers 7 core features for industrial circular commerce:
-1. **AI Material Diagnostics (Gemini 2.5)**: Instant classification of scrap into standard grades and secondary reuse cases.
+1. **AI Material Diagnostics**: Instant classification of scrap into standard grades and secondary reuse cases.
 2. **Smart Buyer Matching**: Algorithmic scoring (0–100) based on buyer demand and compatibility.
 3. **Logistics Cost Engine**: Real-time freight deduction at ₹35/km for transparent net margins.
 4. **Automated B2B Proposals**: One-click AI-drafted business outreach proposals.
@@ -179,7 +179,7 @@ function getLocalSmartResponse(userQuery: string): string {
 - 🧱 **Minerals**: Fly ash, furnace slag (₹6–₹18/KG)`;
   }
 
-  return `CIRCULON is an AI-powered Waste-to-Buyer Circular Intelligence platform. It uses Google Gemini 2.5 Flash to categorize industrial scrap, match verified buyers, deduct freight at ₹35/km, and maximize net profit. 
+  return `CIRCULON is an AI-powered Waste-to-Buyer Circular Intelligence platform. It uses Advanced AI to categorize industrial scrap, match verified buyers, deduct freight at ₹35/km, and maximize net profit. 
 
 You can ask me about:
 - **Platform Features**

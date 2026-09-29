@@ -14,48 +14,7 @@ export interface EmailNotification {
 }
 
 // In-memory store for dispatched email notifications (allows admin to review emails sent)
-let dispatchedEmailLogs: EmailNotification[] = [
-  {
-    id: 'email-sample-1',
-    to: 'admin@apexsteel.co',
-    companyName: 'Apex Steel & Alloys',
-    subject: 'Company Registration Approved - You Can Log In Now | CIRCULON',
-    bodyHtml: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff;">
-        <div style="text-align: center; margin-bottom: 24px;">
-          <h2 style="color: #15803d; margin: 0; font-size: 24px;">CIRCULON</h2>
-          <p style="color: #6b7280; font-size: 12px; margin-top: 4px;">Industrial Waste-to-Buyer Intelligence Network</p>
-        </div>
-        <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 16px; border-radius: 12px; margin-bottom: 20px;">
-          <h3 style="color: #166534; margin: 0 0 8px 0; font-size: 16px;">✓ Registration Approved by Administrator</h3>
-          <p style="color: #14532d; font-size: 14px; margin: 0;">Your business documents and ID proof have been successfully verified.</p>
-        </div>
-        <p style="font-size: 15px; color: #374151; line-height: 1.6;">Dear <strong>Apex Steel & Alloys</strong> team,</p>
-        <p style="font-size: 14px; color: #4b5563; line-height: 1.6;">
-          Your company application on <strong>CIRCULON</strong> has been reviewed and officially <strong>APPROVED</strong> by our administrative team. Your account is now active and ready for use.
-        </p>
-        <div style="text-align: center; margin: 32px 0;">
-          <a href="http://localhost:3000/login" style="background-color: #16a34a; color: #ffffff; padding: 14px 28px; font-weight: bold; font-size: 15px; text-decoration: none; border-radius: 10px; display: inline-block;">
-            Log In to CIRCULON Now →
-          </a>
-        </div>
-        <p style="font-size: 13px; color: #6b7280; line-height: 1.5;">
-          Once logged in, you can browse verified industrial byproduct listings, generate instant AI material matching, and interact with verified sellers.
-        </p>
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-        <p style="font-size: 11px; color: #9ca3af; text-align: center;">
-          CIRCULON AI Intelligence Platform • Industrial Corridor, Tamil Nadu, India<br />
-          For support contact: support@circulon.ai
-        </p>
-      </div>
-    `,
-    bodyText: 'Dear Apex Steel & Alloys team, Your company registration on CIRCULON has been APPROVED. You can log in now at http://localhost:3000/login',
-    type: 'approval',
-    status: 'simulated',
-    sentAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-    loginUrl: 'http://localhost:3000/login',
-  }
-];
+let dispatchedEmailLogs: EmailNotification[] = [];
 
 export async function sendApprovalEmail({
   to,

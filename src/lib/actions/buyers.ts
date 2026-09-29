@@ -23,191 +23,25 @@ export interface BuyerRequirement {
   created_at: string;
 }
 
-// Verified enterprise buyers network with contact details and background compliance dossiers
-const VERIFIED_ENTERPRISE_BUYERS = [
-  {
-    id: 'buyer-ecothreads-1',
-    company_name: 'EcoThreads Manufacturing Corp',
-    industry: 'Textiles & Apparel',
-    buyer_type: 'Manufacturer / OEM',
-    city: 'Coimbatore',
-    state: 'Tamil Nadu',
-    contact_person: 'Mr. Karthik Raman (Head of Circular Procurement)',
-    email: 'procure@ecothreads.in',
-    phone: '+91 94432 11029',
-    company_address: 'Plot 42, Textile Industrial Estate, Palladam Road, Coimbatore, Tamil Nadu - 641604',
-    id_proof_number: 'GSTIN: 33AAAAA0000A1Z5',
-    cin: 'CIN: U17111TZ2018PTC030112',
-    verification_status: 'verified',
-    reliability_rating: 'Grade A+ (98% Settlement On-Time)',
-    compliance_status: 'TNPCB Zero Liquid Discharge Compliant',
-    materials_required: ['Cotton', 'Textile Waste', 'Fabric Scraps', 'Yarn', 'Comber Noil'],
-    min_quantity: 100,
-    max_quantity: 10000,
-    min_price: 25,
-    max_price: 45,
-    annual_diversion_tons: 1450,
-    established_year: 2018
-  },
-  {
-    id: '1d04eb58-fda7-4e34-9fa0-19e96f1d5ff2',
-    company_name: 'GreenPolymer Recyclers Ltd',
-    industry: 'Plastics & Polymers',
-    buyer_type: 'Aggregator & Compounder',
-    city: 'Chennai',
-    state: 'Tamil Nadu',
-    contact_person: 'Mrs. Priya Sundaram (Supply Chain Director)',
-    email: 'trade@greenpolymer.com',
-    phone: '+91 98401 55678',
-    company_address: 'Sector 18, Guindy Industrial Estate, Chennai, Tamil Nadu - 600032',
-    id_proof_number: 'GSTIN: 33AABCG1234F1Z8',
-    cin: 'CIN: U25209TN2020PTC123456',
-    verification_status: 'verified',
-    reliability_rating: 'Grade A (95% Settlement On-Time)',
-    compliance_status: 'CPCB Plastic Waste Processing Authorized (EPR Registered)',
-    materials_required: ['Mixed Plastic', 'PET', 'HDPE', 'Polymer Regrind', 'Plastic Scrap', 'Polyethylene'],
-    min_quantity: 500,
-    max_quantity: 25000,
-    min_price: 15,
-    max_price: 35,
-    annual_diversion_tons: 3200,
-    established_year: 2020
-  },
-  {
-    id: 'buyer-steelforge-3',
-    company_name: 'SteelForge Metallurgy Industries',
-    industry: 'Metallurgy & Secondary Steel',
-    buyer_type: 'Manufacturer & Foundry',
-    city: 'Pune',
-    state: 'Maharashtra',
-    contact_person: 'Mr. Amit Shinde (Materials Sourcing Lead)',
-    email: 'procurement@steelforge.co.in',
-    phone: '+91 98220 99482',
-    company_address: 'Bhosari MIDC, Industrial Block T-12, Pune, Maharashtra - 411026',
-    id_proof_number: 'GSTIN: 27AABCA1234F1Z1',
-    cin: 'CIN: U27100PN2015PLC044910',
-    verification_status: 'verified',
-    reliability_rating: 'Grade A+ (99% Settlement On-Time)',
-    compliance_status: 'MPCB Category-Red Consent to Operate Active',
-    materials_required: ['Scrap Iron', 'Aluminium', 'Copper', 'Steel Turnings', 'Metal Scrap', 'Brass'],
-    min_quantity: 1000,
-    max_quantity: 100000,
-    min_price: 35,
-    max_price: 65,
-    annual_diversion_tons: 12500,
-    established_year: 2015
-  },
-  {
-    id: 'buyer-greenfill-4',
-    company_name: 'GreenFill Solutions & Infrastructure',
-    industry: 'Building Materials & Cement',
-    buyer_type: 'Manufacturer',
-    city: 'Bengaluru',
-    state: 'Karnataka',
-    contact_person: 'Ms. Pooja Reddy (Director of Sustainable Sourcing)',
-    email: 'sourcing@greenfill.io',
-    phone: '+91 80234 11200',
-    company_address: 'Peenya Industrial Area, Phase IV, Bengaluru, Karnataka - 560058',
-    id_proof_number: 'GSTIN: 29AABCG7890K1Z4',
-    cin: 'CIN: U45200KA2019PTC098231',
-    verification_status: 'verified',
-    reliability_rating: 'Grade A (94% Settlement On-Time)',
-    compliance_status: 'Green Pro Certified Infrastructure Manufacturer',
-    materials_required: ['Fly Ash', 'Concrete Rubble', 'Glass', 'Slag', 'Demolition Waste'],
-    min_quantity: 2000,
-    max_quantity: 50000,
-    min_price: 5,
-    max_price: 18,
-    annual_diversion_tons: 45000,
-    established_year: 2019
-  },
-  {
-    id: 'buyer-apexbio-5',
-    company_name: 'Apex BioEnergy & Paper Mills',
-    industry: 'Pulp & Bio-Energy',
-    buyer_type: 'Paper Mill & Energy Generator',
-    city: 'Surat',
-    state: 'Gujarat',
-    contact_person: 'Mr. Rajesh Patel (Procurement Executive)',
-    email: 'rawmaterials@apexbio.in',
-    phone: '+91 97123 45670',
-    company_address: 'GIDC Industrial Estate, Sachin, Surat, Gujarat - 394230',
-    id_proof_number: 'GSTIN: 24AABCA5678J1Z2',
-    cin: 'CIN: U21010GJ2016PTC054321',
-    verification_status: 'verified',
-    reliability_rating: 'Grade A (96% Settlement On-Time)',
-    compliance_status: 'GPCB Bio-Fuel Utilization Compliance Certificate',
-    materials_required: ['Cardboard', 'Paper Waste', 'Corrugated Boxes', 'Biomass', 'Wood Shavings'],
-    min_quantity: 1000,
-    max_quantity: 30000,
-    min_price: 8,
-    max_price: 22,
-    annual_diversion_tons: 8900,
-    established_year: 2016
-  }
-];
+let localBuyerRequirements: BuyerRequirement[] = [];
 
-let localBuyerRequirements: BuyerRequirement[] = [
-  {
-    id: 'req-cotton-1',
-    buyer_id: 'buyer-ecothreads-1',
-    material_name: 'Cotton Comber Noil & Mill Waste',
-    category: 'Textiles',
-    min_quantity: 500,
-    max_quantity: 5000,
-    unit: 'KG',
-    preferred_quality: 'Medium+',
-    max_price: 40,
-    preferred_location: 'Tamil Nadu',
-    industry: 'Recycled Yarn & Textile Spinning',
-    required_date: 'Within 15 Days',
-    created_at: new Date(Date.now() - 3600000 * 24).toISOString()
-  },
-  {
-    id: 'req-pet-2',
-    buyer_id: '1d04eb58-fda7-4e34-9fa0-19e96f1d5ff2',
-    material_name: 'Clear PET Flakes / Regrind',
-    category: 'Plastics & Polymers',
-    min_quantity: 2000,
-    max_quantity: 20000,
-    unit: 'KG',
-    preferred_quality: 'High (<100ppm PVC)',
-    max_price: 45,
-    preferred_location: 'South India',
-    industry: 'Recycled Polyester Staple Fiber (rPSF)',
-    required_date: 'Immediate / Continuous',
-    created_at: new Date(Date.now() - 3600000 * 48).toISOString()
-  }
-];
-
-let localSavedListings: string[] = ['sample-waste-1'];
+let localSavedListings: string[] = [];
 
 export async function getBuyers() {
   try {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) return VERIFIED_ENTERPRISE_BUYERS
-
-    const { data: dbBuyers } = await supabase
+    const { data: dbBuyers, error } = await supabase
       .from('buyers')
       .select('*')
       .order('created_at', { ascending: false })
 
-    if (!dbBuyers || dbBuyers.length === 0) {
-      return VERIFIED_ENTERPRISE_BUYERS
+    if (error || !dbBuyers) {
+      return [];
     }
 
-    const merged = [...dbBuyers];
-    VERIFIED_ENTERPRISE_BUYERS.forEach(vb => {
-      if (!merged.some(mb => mb.company_name?.toLowerCase() === vb.company_name.toLowerCase())) {
-        merged.push(vb as any);
-      }
-    });
-
-    return merged;
+    return dbBuyers;
   } catch (err) {
-    return VERIFIED_ENTERPRISE_BUYERS
+    return [];
   }
 }
 
@@ -272,20 +106,7 @@ export async function getBuyerProfileAndRequirements() {
 
     let materials: string[] = user.user_metadata?.materials_required || (profile as any)?.materials_required || []
 
-    if (materials.length === 0) {
-      const comp = (profile?.company_name || user.email || '').toLowerCase()
-      const ind = (profile?.industry || '').toLowerCase()
-      
-      if (comp.includes('polymer') || comp.includes('plastic') || ind.includes('plastic') || ind.includes('polymer')) {
-        materials = ['High-Density Polyethylene (HDPE)', 'PET Flakes', 'Mixed Plastic Scrap', 'Polymer Regrind']
-      } else if (comp.includes('thread') || comp.includes('textile') || ind.includes('textile')) {
-        materials = ['Cotton Comber Scraps', 'Textile Waste', 'Fabric Scraps', 'Yarn Waste']
-      } else if (comp.includes('steel') || comp.includes('forge') || ind.includes('metal')) {
-        materials = ['Scrap Iron', 'Aluminium Scrap', 'Copper Wire Scrap', 'Steel Turnings']
-      } else {
-        materials = ['High-Density Polyethylene (HDPE)', 'PET Flakes', 'Mixed Plastic Scrap']
-      }
-    }
+
 
     return {
       user,

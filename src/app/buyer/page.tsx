@@ -459,21 +459,6 @@ export default function BuyerDashboard() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16">
-      {/* Overview-only top widgets */}
-      {activeTab === 'overview' && (
-        <>
-          {/* Prototype / Demonstration Notice Badge (Part 17) */}
-          <div className="flex items-center justify-between bg-blue-50 border border-blue-200/80 px-4 py-2 rounded-xl text-xs text-blue-950">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-              <span><strong>Prototype / Demonstration Mode:</strong> Sourcing industrial by-products verified against registered buyer procurement criteria.</span>
-            </div>
-            <span className="text-[10px] uppercase font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
-              CPCB / EPR Compliant
-            </span>
-          </div>
-        </>
-      )}
 
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200/80 pb-6">
@@ -1072,7 +1057,7 @@ export default function BuyerDashboard() {
           <div className="bg-gradient-to-br from-gray-950 via-emerald-950 to-green-950 text-white p-6 sm:p-8 rounded-3xl shadow-xl space-y-4">
             <div className="flex items-center gap-2">
               <span className="px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                Gemini 3.6 Flash
+                AI Engine
               </span>
               <span className="text-xs text-emerald-200">Natural Language Scrap Procurement Engine</span>
             </div>

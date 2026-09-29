@@ -154,14 +154,21 @@ The platform connects to Supabase PostgreSQL, backed by a resilient server-side 
 
 ## 🔑 Demo & Test Credentials
 
-The application is pre-seeded with authenticated test accounts for instant evaluation across all roles:
+The application is pre-seeded with authenticated company accounts across key industrial circular-economy sectors:
 
-| Role | Email Address | Password | Purpose |
-|---|---|---|---|
-| **Platform Administrator** | `admin@circulon.com` | `Admin@123456` | Moderation, KYB audits, analytics, user suspension |
-| **Waste Generator (Seller)** | `seller@circulon.com` | `Seller@123456` | Listing waste, AI analysis, 6-point buyer matching, deals |
-| **Industrial Recycler (Buyer)**| `buyer@circulon.com` | `Buyer@123456` | Marketplace procurement, AI match finder, negotiation |
-| **Logistics Driver** | `driver@circulon.com` | `Driver@123456` | Route dispatch, transit tracking, delivery milestones |
+| # | Company Name | Role | Email Address | Password | Industry Focus |
+|---|---|---|---|---|---|
+| 1 | **Apex Industrial Recycling** | Seller | `apex.textiles@circulon.com` *(or `seller@circulon.com`)* | `Seller@123456` | Textiles (Cotton Comber & Denim Scraps) |
+| 2 | **GreenPolymer Recyclers** | Buyer | `greenpolymer@circulon.com` *(or `buyer@circulon.com`)* | `Buyer@123456` | Plastics & Polymers (PET & HDPE Flakes) |
+| 3 | **Tata EcoSteel & Foundry** | Seller | `ecosteel@circulon.com` | `Steel@123456` | Metallurgy & Steel (Slag & Mill Scale) |
+| 4 | **BioAgro Circular Energy** | Buyer | `bioagro@circulon.com` | `BioAgro@123456` | Biofuels & Biomass (Bagasse & Rice Husk) |
+| 5 | **Deccan Paper & Packaging** | Buyer | `deccanpaper@circulon.com` | `Paper@123456` | Paper & Packaging (OCC Cardboard & Kraft) |
+| 6 | **EcoPlast Polymers** | Seller | `ecoplast@circulon.com` | `Plast@123456` | Plastics & Petrochemicals (HDPE & PET) |
+| 7 | **Horizon E-Waste Refiners** | Buyer | `horizon.refiners@circulon.com` | `Horizon@123456` | Electronics & E-Waste (PCBs & Copper Scrap) |
+| 8 | **Bharat BioChemicals** | Seller | `bharat.bio@circulon.com` | `Bharat@123456` | Agro-Processing (Bagasse & Amorphous Silica) |
+| 9 | **InfraCycle Demolition** | Seller | `infracycle@circulon.com` | `Infra@123456` | Construction & Demolition (Aggregates & Fly Ash) |
+| 10 | **QuickFreight Green Logistics** | Driver | `quickfreight@circulon.com` *(or `driver@circulon.com`)* | `Driver@123456` | Commercial Fleet, Dispatch & Haulage |
+| + | **CIRCULON Platform HQ** | Admin | `admin@circulon.com` | `Admin@123456` | Platform Moderation, Audits & Analytics |
 
 ---
 

@@ -7,6 +7,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   company_name TEXT NOT NULL,
+  email TEXT,
   industry TEXT,
   phone TEXT,
   role TEXT DEFAULT 'seller' CHECK (role IN ('seller', 'buyer', 'admin', 'driver')),
