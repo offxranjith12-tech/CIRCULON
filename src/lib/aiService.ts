@@ -688,13 +688,22 @@ function getStructuredFallback(waste: WasteData): AiAnalysisResult {
   };
 }
 
+// In-memory cache for fast, instant responses on repeated lookups
+const aiAnalysisCache = new Map<string, AiAnalysisResult>();
+
 export const analyzeWaste = async (waste: WasteData): Promise<AiAnalysisResult> => {
+  const cacheKey = `${(waste.wasteType || '').trim().toLowerCase()}_${waste.quantity}_${waste.condition}_${waste.contaminationLevel || ''}`;
+  if (aiAnalysisCache.has(cacheKey)) {
+    return aiAnalysisCache.get(cacheKey)!;
+  }
+
   const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     console.warn("API key missing. Using CIRCULON Circular Economy Knowledge Engine.");
-    await new Promise(resolve => setTimeout(resolve, 600));
-    return getStructuredFallback(waste);
+    const fallback = getStructuredFallback(waste);
+    aiAnalysisCache.set(cacheKey, fallback);
+    return fallback;
   }
 
   const prompt = `
@@ -749,14 +758,19 @@ Respond ONLY with a valid, parseable JSON object matching this schema exactly wi
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+    const aiPromise = ai.models.generateContent({
+      model: 'gemini-3.8-flash',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
       }
     });
 
+    const timeoutPromise = new Promise<never>((_, reject) => 
+      setTimeout(() => reject(new Error("AI generation timeout (2000ms reached)")), 2000)
+    );
+
+    const response = await Promise.race([aiPromise, timeoutPromise]);
     const textResult = response.text;
     if (!textResult) throw new Error("Empty response from AI");
 
@@ -859,32 +873,37 @@ Respond ONLY with a valid, parseable JSON object matching this schema exactly wi
       productOpportunities: productOpps
     };
 
-    // Store in Supabase if possible
-    try {
-      const supabase = await createClient();
-      await supabase.from('ai_analyses').insert({
-        waste_id: null,
-        material_type: result.material,
-        category: result.category,
-        confidence_score: result.confidence,
-        quality_estimate: result.quality,
-        contamination_estimate: result.contamination,
-        possible_industries: result.industries,
-        possible_applications: result.applications.map(a => a.name),
-        estimated_value_min: result.estimated_value_min,
-        estimated_value_max: result.estimated_value_max,
-        co2_savings_kg: result.co2_savings_kg,
-        landfill_diversion_kg: result.landfill_diversion_kg,
-        model_used: 'gemini-2.5-flash',
-        analysis_result: result as any
-      });
-    } catch {
-      // Non-critical background logging
-    }
+    // Store in Supabase asynchronously without blocking client return
+    (async () => {
+      try {
+        const supabase = await createClient();
+        await supabase.from('ai_analyses').insert({
+          waste_id: null,
+          material_type: result.material,
+          category: result.category,
+          confidence_score: result.confidence,
+          quality_estimate: result.quality,
+          contamination_estimate: result.contamination,
+          possible_industries: result.industries,
+          possible_applications: result.applications.map(a => a.name),
+          estimated_value_min: result.estimated_value_min,
+          estimated_value_max: result.estimated_value_max,
+          co2_savings_kg: result.co2_savings_kg,
+          landfill_diversion_kg: result.landfill_diversion_kg,
+          model_used: 'gemini-3.8-flash',
+          analysis_result: result as any
+        });
+      } catch {
+        // Non-critical background logging
+      }
+    })();
 
+    aiAnalysisCache.set(cacheKey, result);
     return result;
   } catch (error: any) {
-    console.warn("Gemini call error. Using Circular Knowledge Engine.", error?.message || error);
-    return getStructuredFallback(waste);
+    console.warn("AI generation note. Using Circular Knowledge Engine:", error?.message || error);
+    const fallback = getStructuredFallback(waste);
+    aiAnalysisCache.set(cacheKey, fallback);
+    return fallback;
   }
 };

@@ -188,6 +188,8 @@ You can ask me about:
 - **Company Registration & Approval Process**`;
 }
 
+const chatCache = new Map<string, string>();
+
 export async function askCirculonAssistant(
   message: string,
   history: ChatMessage[] = []
@@ -195,10 +197,16 @@ export async function askCirculonAssistant(
   const trimmed = message.trim();
   if (!trimmed) return "Please enter a question about CIRCULON.";
 
+  const cacheKey = trimmed.toLowerCase();
+  if (history.length === 0 && chatCache.has(cacheKey)) {
+    return chatCache.get(cacheKey)!;
+  }
+
   const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    return getLocalSmartResponse(trimmed);
+    const local = getLocalSmartResponse(trimmed);
+    if (history.length === 0) chatCache.set(cacheKey, local);
+    return local;
   }
 
   try {
@@ -206,7 +214,7 @@ export async function askCirculonAssistant(
 
     // Format conversation history for context
     const conversationContext = history
-      .slice(-6)
+      .slice(-4)
       .map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.text}`)
       .join('\n');
 
@@ -225,14 +233,22 @@ CRITICAL INSTRUCTIONS:
 3. NEVER provide random, out-of-context, or hallucinatory answers.
 `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
+    const aiPromise = ai.models.generateContent({
+      model: 'gemini-3.8-flash',
       contents: prompt,
     });
 
-    return response.text || getLocalSmartResponse(trimmed);
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("AI chat timeout")), 2000)
+    );
+
+    const response = await Promise.race([aiPromise, timeoutPromise]);
+    const resText = response.text || getLocalSmartResponse(trimmed);
+    if (history.length === 0) chatCache.set(cacheKey, resText);
+    return resText;
   } catch (error: any) {
-    console.warn('Gemini chat API error, falling back to local engine:', error?.message || error);
-    return getLocalSmartResponse(trimmed);
+    const local = getLocalSmartResponse(trimmed);
+    if (history.length === 0) chatCache.set(cacheKey, local);
+    return local;
   }
 }

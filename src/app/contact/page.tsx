@@ -45,8 +45,8 @@ export default function ContactPage() {
               </div>
               <div>
                 <div className="text-xs font-bold text-gray-500 uppercase">Email Support</div>
-                <a href="mailto:support@circulon.ai" className="text-sm font-semibold text-green-700 hover:underline">
-                  support@circulon.ai
+                <a href="mailto:circulonsih@gmail.com" className="text-sm font-semibold text-green-700 hover:underline">
+                  circulonsih@gmail.com
                 </a>
                 <p className="text-xs text-gray-500 mt-0.5">Response within 24 hours</p>
               </div>

@@ -18,7 +18,7 @@ export interface WasteMaterial {
   available_date?: string;
   description?: string;
   image_url?: string | null;
-  status: 'active' | 'pending' | 'matched' | 'sold' | 'completed' | 'rejected' | 'archived';
+  status: 'active' | 'pending' | 'matched' | 'sold' | 'completed' | 'rejected' | 'archived' | 'suspended';
   seller?: {
     company_name: string;
     company_address?: string;
@@ -29,12 +29,12 @@ export interface WasteMaterial {
   updated_at?: string;
 }
 
+import { sharedStore } from '@/lib/sharedStore'
+
 function isValidUUID(str: string): boolean {
   if (!str) return false;
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
 }
-
-let localUserListings: WasteMaterial[] = [];
 
 export async function getWasteMaterials(): Promise<WasteMaterial[]> {
   try {
@@ -50,40 +50,47 @@ export async function getWasteMaterials(): Promise<WasteMaterial[]> {
       query = query.eq('seller_id', user.id);
     }
 
-    const { data, error } = await query;
-    let list: WasteMaterial[] = [];
-
-    if (!error && data && data.length > 0) {
-      list = data.map((d: any) => ({
-        ...d,
-        category: d.category || 'General Industrial Waste',
-        unit: d.unit || 'KG',
-        status: d.status || 'active',
-        seller: d.seller || {
-          company_name: 'Apex Industrial Recycling Corp',
-          company_address: 'Tirupur, Tamil Nadu',
-          phone: '+91 98400 11223'
+    const { data } = await query;
+    if (data && data.length > 0) {
+      data.forEach((d: any) => {
+        const sellerProfile = sharedStore.getCompanyById(d.seller_id);
+        const wasteItem: WasteMaterial = {
+          ...d,
+          category: d.category || 'General Industrial Waste',
+          unit: d.unit || 'KG',
+          status: d.status || 'active',
+          seller: sellerProfile ? {
+            company_name: sellerProfile.company_name,
+            company_address: sellerProfile.company_address,
+            phone: '+91 98400 11223',
+            email: sellerProfile.email
+          } : (d.seller || {
+            company_name: 'Apex Industrial Recycling Corp',
+            company_address: 'Tirupur, Tamil Nadu',
+            phone: '+91 98400 11223'
+          })
+        };
+        // Merge into shared store if not already present
+        if (!sharedStore.getWasteById(d.id)) {
+          sharedStore.addWaste(wasteItem);
         }
-      }));
+      });
     }
-
-    // Merge in-memory local listings that aren't already returned by DB
-    const existingIds = new Set(list.map(w => w.id));
-    const missingLocal = localUserListings.filter(w => !existingIds.has(w.id));
-    return [...missingLocal, ...list];
   } catch (err) {
-    console.error('Exception in getWasteMaterials:', err);
-    return localUserListings;
+    // Non-critical, fallback to sharedStore
   }
+
+  return sharedStore.getWaste('all');
 }
 
 export async function addWasteMaterial(formData: FormData): Promise<WasteMaterial> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const defaultSellerId = '11111111-1111-4000-8000-000000000001';
+  const defaultSellerId = '0a09b131-3e59-4206-8f62-2f4f75092243';
   const userId = (user?.id && isValidUUID(user.id)) ? user.id : defaultSellerId;
-  const companyName = user?.user_metadata?.company_name || user?.email?.split('@')[0] || 'Apex Industrial Recycling Corp'
+  const sellerCompany = sharedStore.getCompanyById(userId);
+  const companyName = user?.user_metadata?.company_name || sellerCompany?.company_name || user?.email?.split('@')[0] || 'Apex Industrial Recycling Corp'
 
   let image_url = null;
   const imageFile = formData.get('image_file') as File;
@@ -121,7 +128,7 @@ export async function addWasteMaterial(formData: FormData): Promise<WasteMateria
     condition: (formData.get('condition') as string) || 'Dry & clean',
     moisture_percentage: Number(formData.get('moisture_percentage')) || 5,
     contamination_level: (formData.get('contamination_level') as string) || 'Low',
-    location: (formData.get('location') as string) || 'Tamil Nadu',
+    location: (formData.get('location') as string) || sellerCompany?.company_address || 'Tamil Nadu',
     expected_price: Number(formData.get('expected_price')) || 30,
     available_date: (formData.get('available_date') as string) || 'Immediate',
     description: (formData.get('description') as string) || '',
@@ -129,8 +136,9 @@ export async function addWasteMaterial(formData: FormData): Promise<WasteMateria
     status: 'active',
     seller: {
       company_name: companyName,
-      company_address: 'Registered Industrial Complex',
-      phone: '+91 98400 11223'
+      company_address: sellerCompany?.company_address || 'Registered Industrial Complex, Tamil Nadu',
+      phone: '+91 98400 11223',
+      email: sellerCompany?.email || 'apex.textiles@circulon.com'
     },
     created_at: new Date().toISOString()
   };
@@ -160,19 +168,19 @@ export async function addWasteMaterial(formData: FormData): Promise<WasteMateria
 
     if (!error && data) {
       newWaste.id = data.id;
-    } else if (error) {
-      console.warn('Supabase waste insert error:', error.message);
     }
   } catch (err: any) {
-    console.warn('Fallback on waste insert:', err?.message || err);
+    // Non-critical DB fallback
   }
 
-  localUserListings.unshift(newWaste);
+  // Add to central shared store immediately for instant Buyer & Admin visibility
+  sharedStore.addWaste(newWaste);
 
   revalidatePath('/dashboard')
   revalidatePath('/waste')
   revalidatePath('/matches')
   revalidatePath('/buyer')
+  revalidatePath('/admin')
 
   return newWaste;
 }
@@ -191,13 +199,18 @@ export async function updateWasteStatus(
     // fallback
   }
 
-  localUserListings = localUserListings.map(w => w.id === id ? { ...w, status } : w);
+  sharedStore.updateWasteStatus(id, status);
 
   revalidatePath('/dashboard')
   revalidatePath('/waste')
   revalidatePath('/matches')
   revalidatePath('/admin')
+  revalidatePath('/buyer')
   return { success: true }
+}
+
+export async function markWasteAsSold(id: string) {
+  return await updateWasteStatus(id, 'sold');
 }
 
 export async function deleteWasteMaterial(id: string) {
@@ -211,29 +224,47 @@ export async function deleteWasteMaterial(id: string) {
     // fallback
   }
 
-  localUserListings = localUserListings.filter(w => w.id !== id);
+  sharedStore.deleteWaste(id);
 
   revalidatePath('/dashboard')
   revalidatePath('/waste')
   revalidatePath('/buyer')
+  revalidatePath('/admin')
 }
 
 export async function getMarketplaceWaste(): Promise<WasteMaterial[]> {
   try {
     const supabase = await createClient()
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('waste_materials')
-      .select('*, seller:profiles!seller_id(company_name, company_address, phone)')
+      .select('*')
       .in('status', ['active', 'matched'])
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching marketplace waste:', error);
-      return [];
+    if (data && data.length > 0) {
+      data.forEach((d: any) => {
+        if (!sharedStore.getWasteById(d.id)) {
+          const sellerProfile = sharedStore.getCompanyById(d.seller_id);
+          sharedStore.addWaste({
+            ...d,
+            seller: sellerProfile ? {
+              company_name: sellerProfile.company_name,
+              company_address: sellerProfile.company_address,
+              phone: '+91 98400 11223',
+              email: sellerProfile.email
+            } : {
+              company_name: 'Apex Industrial Recycling Corp',
+              company_address: 'Tirupur, Tamil Nadu',
+              phone: '+91 98400 11223'
+            }
+          });
+        }
+      });
     }
-    return data || [];
   } catch (err) {
-    console.error('Exception in getMarketplaceWaste:', err);
-    return [];
+    // fallback
   }
+
+  // Returns live marketplace items from sharedStore (active & matched only)
+  return sharedStore.getWaste('marketplace');
 }

@@ -16,40 +16,33 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = await createClient();
-  let user: any = null;
-  try {
-    const { data } = await supabase.auth.getUser();
-    user = data?.user || null;
-  } catch {
-    user = null;
-  }
-  
   const { cookies } = await import('next/headers');
   const cookieStore = await cookies();
   const sessionRole = cookieStore.get('circulon_role')?.value;
   const sessionUser = cookieStore.get('circulon_user')?.value;
 
   let role = sessionRole || 'seller';
+  let user: any = null;
 
-  if (user) {
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
-    if (sessionRole) {
-      role = sessionRole;
-    } else if (profile?.role) {
-      role = profile.role;
-    } else if (user.user_metadata?.role) {
-      role = user.user_metadata.role;
-    } else if (user.email?.toLowerCase().includes('admin')) {
-      role = 'admin';
-    } else if (user.email?.toLowerCase().includes('driver')) {
-      role = 'driver';
-    } else if (user.email?.toLowerCase().includes('buyer')) {
-      role = 'buyer';
-    }
-  } else if (sessionRole) {
+  // Fast-path: If active session cookies exist, immediately construct session user in 0ms
+  if (sessionRole && sessionUser) {
+    user = { 
+      email: sessionUser, 
+      id: 'session-user', 
+      user_metadata: { role: sessionRole, company_name: sessionUser.split('@')[0] } 
+    };
     role = sessionRole;
-    user = { email: sessionUser || `${sessionRole}@circulon.com`, id: 'session-user' };
+  } else {
+    try {
+      const supabase = await createClient();
+      const { data } = await supabase.auth.getUser();
+      user = data?.user || null;
+      if (user) {
+        role = user.user_metadata?.role || (user.email?.toLowerCase().includes('admin') ? 'admin' : (user.email?.toLowerCase().includes('buyer') ? 'buyer' : (user.email?.toLowerCase().includes('driver') ? 'driver' : 'seller')));
+      }
+    } catch {
+      user = null;
+    }
   }
 
   return (

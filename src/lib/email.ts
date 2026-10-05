@@ -116,7 +116,7 @@ export async function sendApprovalEmail({
                     </ul>
 
                     <p style="font-size: 12px; color: #9ca3af; margin: 0;">
-                      If you did not register for this account, please contact our security team immediately at <a href="mailto:support@circulon.ai" style="color: #16a34a;">support@circulon.ai</a>.
+                      If you did not register for this account, please contact our security team immediately at <a href="mailto:circulonsih@gmail.com" style="color: #16a34a;">circulonsih@gmail.com</a>.
                     </p>
                   </td>
                 </tr>
@@ -128,7 +128,7 @@ export async function sendApprovalEmail({
                       CIRCULON Inc. • Circular Industrial Intelligence Platform
                     </p>
                     <p style="color: #6b7280; font-size: 11px; margin: 0;">
-                      Industrial Hub, Coimbatore & Chennai, Tamil Nadu, India • <a href="mailto:support@circulon.ai" style="color: #4ade80; text-decoration: none;">support@circulon.ai</a>
+                      Industrial Hub, Coimbatore & Chennai, Tamil Nadu, India • <a href="mailto:circulonsih@gmail.com" style="color: #4ade80; text-decoration: none;">circulonsih@gmail.com</a>
                     </p>
                   </td>
                 </tr>
@@ -156,7 +156,7 @@ ${loginUrl}
 
 Best regards,
 The CIRCULON Team
-support@circulon.ai
+circulonsih@gmail.com
   `.trim();
 
   let sentStatus: 'sent' | 'simulated' = 'simulated';
@@ -166,7 +166,7 @@ support@circulon.ai
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASS;
   const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
-  const fromEmail = process.env.SMTP_FROM || 'CIRCULON Admin <no-reply@circulon.ai>';
+  const fromEmail = process.env.SMTP_FROM || 'CIRCULON Admin <circulonsih@gmail.com>';
 
   if (smtpHost && smtpUser && smtpPass) {
     try {
@@ -231,7 +231,7 @@ export async function sendRejectionEmail({
   reason: string;
 }): Promise<{ success: boolean; message: string; notification: EmailNotification }> {
   const subject = `Update Regarding Your CIRCULON Company Registration`;
-  const bodyText = `Dear ${companyName} team, your registration could not be approved at this time. Reason: ${reason}. Please contact support@circulon.ai for questions.`;
+  const bodyText = `Dear ${companyName} team, your registration could not be approved at this time. Reason: ${reason}. Please contact circulonsih@gmail.com for questions.`;
   const bodyHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #fee2e2; border-radius: 16px; background-color: #ffffff;">
       <h2 style="color: #dc2626;">CIRCULON Application Update</h2>
@@ -240,7 +240,7 @@ export async function sendRejectionEmail({
       <div style="background-color: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px; color: #991b1b; font-size: 13px;">
         ${reason}
       </div>
-      <p style="margin-top: 16px;">If you have any questions or have corrected documentation, please reply to <a href="mailto:support@circulon.ai">support@circulon.ai</a>.</p>
+      <p style="margin-top: 16px;">If you have any questions or have corrected documentation, please reply to <a href="mailto:circulonsih@gmail.com">circulonsih@gmail.com</a>.</p>
     </div>
   `;
 

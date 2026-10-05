@@ -27,7 +27,83 @@ let localBuyerRequirements: BuyerRequirement[] = [];
 
 let localSavedListings: string[] = [];
 
+let cachedBuyers: any[] | null = null;
+let cachedBuyersExpiry = 0;
+
+const CANONICAL_BUYERS = [
+  {
+    id: 'c2-greenpoly-id',
+    company_name: 'GreenPolymer Recyclers Ltd',
+    industry: 'Plastics & Polymers',
+    city: 'Chennai',
+    state: 'Tamil Nadu',
+    materials_required: ['High-Density Polyethylene (HDPE) Regrind', 'Clean Transparent PET Flakes (Hot Washed)', 'Plastics', 'HDPE', 'PET', 'Polymers'],
+    min_quantity: 1000,
+    max_quantity: 25000,
+    min_price: 20,
+    max_price: 45,
+    crm_status: 'ACTIVE'
+  },
+  {
+    id: 'c5-deccan-id',
+    company_name: 'Deccan Paper & Kraft Packaging Mills',
+    industry: 'Paper & Packaging',
+    city: 'Rajahmundry',
+    state: 'Andhra Pradesh',
+    materials_required: ['Post-Industrial Cotton Comber Scraps', 'Corrugated Cardboard (OCC 11) Mill Bales', 'Textiles', 'Cotton', 'Paper', 'OCC'],
+    min_quantity: 2000,
+    max_quantity: 20000,
+    min_price: 25,
+    max_price: 45,
+    crm_status: 'ACTIVE'
+  },
+  {
+    id: 'c4-bioagro-id',
+    company_name: 'BioAgro Circular Energy Solutions',
+    industry: 'Biofuels & Biomass Energy',
+    city: 'Hosur',
+    state: 'Tamil Nadu',
+    materials_required: ['Sugarcane Bagasse Biomass Fiber', 'Paddy Rice Husk Ash (High Amorphous Silica)', 'Desalinated Coconut Coir Pith Blocks', 'Biomass', 'Agro', 'Bagasse'],
+    min_quantity: 5000,
+    max_quantity: 50000,
+    min_price: 2.5,
+    max_price: 10,
+    crm_status: 'ACTIVE'
+  },
+  {
+    id: 'c7-horizon-id',
+    company_name: 'Horizon E-Waste Refiners',
+    industry: 'E-Waste & Metallurgy',
+    city: 'Bengaluru',
+    state: 'Karnataka',
+    materials_required: ['Heavy Melting Steel Scrap (HMS 1 & 2)', 'Blast Furnace Granulated Slag (GGBS Grade)', 'Metals', 'Steel', 'Copper', 'E-Waste'],
+    min_quantity: 1000,
+    max_quantity: 30000,
+    min_price: 30,
+    max_price: 60,
+    crm_status: 'ACTIVE'
+  },
+  {
+    id: 'p1-zenagro-id',
+    company_name: 'ZenAgro BioCompost Ltd',
+    industry: 'Organic Fertilizer & Bio-enrichment',
+    city: 'Coimbatore',
+    state: 'Tamil Nadu',
+    materials_required: ['Organic Agricultural Residue', 'Coir Pith', 'Bagasse'],
+    min_quantity: 1000,
+    max_quantity: 15000,
+    min_price: 3,
+    max_price: 12,
+    crm_status: 'ACTIVE'
+  }
+];
+
 export async function getBuyers() {
+  const now = Date.now();
+  if (cachedBuyers && now < cachedBuyersExpiry) {
+    return cachedBuyers;
+  }
+
   try {
     const supabase = await createClient()
     const { data: dbBuyers, error } = await supabase
@@ -35,13 +111,18 @@ export async function getBuyers() {
       .select('*')
       .order('created_at', { ascending: false })
 
-    if (error || !dbBuyers) {
-      return [];
+    if (error || !dbBuyers || dbBuyers.length === 0) {
+      cachedBuyers = CANONICAL_BUYERS;
+      cachedBuyersExpiry = now + 30000;
+      return CANONICAL_BUYERS;
     }
 
+    cachedBuyers = dbBuyers;
+    cachedBuyersExpiry = now + 30000; // 30s cache
     return dbBuyers;
   } catch (err) {
-    return [];
+    cachedBuyers = CANONICAL_BUYERS;
+    return CANONICAL_BUYERS;
   }
 }
 
@@ -79,6 +160,7 @@ export async function addBuyer(formData: FormData) {
     throw new Error('Failed to add buyer')
   }
 
+  cachedBuyers = null;
   revalidatePath('/dashboard')
   revalidatePath('/buyers')
   return data
@@ -87,6 +169,7 @@ export async function addBuyer(formData: FormData) {
 export async function deleteBuyer(id: string) {
   const supabase = await createClient()
   await supabase.from('buyers').delete().eq('id', id)
+  cachedBuyers = null;
   revalidatePath('/dashboard')
   revalidatePath('/buyers')
 }

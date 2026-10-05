@@ -61,14 +61,26 @@ export default function ManageWastePage() {
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this listing?")) {
-      await deleteWasteMaterial(id);
-      fetchWastes();
+      const prevWastes = wastes;
+      setWastes(prev => prev.filter(w => w.id !== id));
+      try {
+        await deleteWasteMaterial(id);
+      } catch (err) {
+        setWastes(prevWastes);
+        alert("Failed to delete listing. Please try again.");
+      }
     }
   };
 
   const handleStatusChange = async (id: string, newStatus: any) => {
-    await updateWasteStatus(id, newStatus);
-    fetchWastes();
+    const prevWastes = wastes;
+    setWastes(prev => prev.map(w => w.id === id ? { ...w, status: newStatus } : w));
+    try {
+      await updateWasteStatus(id, newStatus);
+    } catch (err) {
+      setWastes(prevWastes);
+      alert("Failed to update status. Please try again.");
+    }
   };
 
   const handleSaveEdit = async (e: React.FormEvent) => {

@@ -31,15 +31,6 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  let user: any = null;
-  try {
-    const { data } = await supabase.auth.getUser();
-    user = data?.user || null;
-  } catch (err) {
-    // Ignore auth lookup errors and proceed unauthenticated
-    user = null;
-  }
-
   const roleCookie = request.cookies.get('circulon_role')?.value;
   const userCookie = request.cookies.get('circulon_user')?.value;
 
@@ -49,13 +40,20 @@ export async function updateSession(request: NextRequest) {
     supabaseResponse.cookies.set('circulon_user', 'admin@circulon.ai', { path: '/' });
   }
 
-  // If user is not authenticated via Supabase Auth token, but has an active role session cookie, restore user
-  if (!user && roleCookie) {
+  let user: any = null;
+  if (roleCookie) {
     user = {
       id: 'session-user',
       email: userCookie || `${roleCookie}@circulon.com`,
       user_metadata: { role: roleCookie },
     };
+  } else {
+    try {
+      const { data } = await supabase.auth.getUser();
+      user = data?.user || null;
+    } catch {
+      user = null;
+    }
   }
 
   // Define protected routes

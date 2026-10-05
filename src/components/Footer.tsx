@@ -103,8 +103,8 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-green-400 shrink-0" />
-                <a href="mailto:support@circulon.ai" className="hover:text-green-400 transition-colors">
-                  support@circulon.ai
+                <a href="mailto:circulonsih@gmail.com" className="hover:text-green-400 transition-colors">
+                  circulonsih@gmail.com
                 </a>
               </li>
               <li className="flex items-center gap-3">

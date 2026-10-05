@@ -94,26 +94,25 @@ export function SuitableBuyersModal({
   };
 
   const handleSendProposal = async (buyerId: string) => {
+    // Instant optimistic update (0ms feedback)
+    setSentRequests(prev => ({ ...prev, [buyerId]: true }));
     setSendingId(buyerId);
+
     try {
       const msg = drafts[buyerId] || `Hello, we have ${quantity.toLocaleString()} KG of ${materialName} available at our facility. Please review our supply proposal.`;
       
       // Dispatch direct message so it creates a chat thread in /messages for both parties
-      try {
-        await sendMessage(buyerId, msg);
-      } catch (msgErr) {
-        console.warn("Direct chat message dispatch note:", msgErr);
-      }
+      sendMessage(buyerId, msg).catch(msgErr => console.warn("Direct chat message dispatch note:", msgErr));
 
       // Also register connection request for enterprise buyer procurement desk
       const res = await sendConnectionRequest(buyerId, wasteId || "", msg);
       if (res && res.success === false) {
+        setSentRequests(prev => ({ ...prev, [buyerId]: false }));
         alert(res.error || "Failed to send proposal. Please try again.");
-      } else {
-        setSentRequests(prev => ({ ...prev, [buyerId]: true }));
       }
     } catch (err: any) {
       console.error("handleSendProposal error:", err);
+      setSentRequests(prev => ({ ...prev, [buyerId]: false }));
       alert(err?.message || "Failed to send proposal. Please try again.");
     } finally {
       setSendingId(null);

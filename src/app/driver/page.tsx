@@ -106,10 +106,15 @@ export default function DriverDashboard() {
       return;
     }
 
-    const res = await advanceTripStep(activeTrip.id, nextStep);
-    if (res.success && res.trip) {
-      setActiveTrip({ ...activeTrip, status: nextStep });
-      setTrips(prev => prev.map(t => t.id === activeTrip.id ? { ...t, status: nextStep } : t));
+    // Instant optimistic update (0ms button response)
+    const tripId = activeTrip.id;
+    setActiveTrip({ ...activeTrip, status: nextStep });
+    setTrips(prev => prev.map(t => t.id === tripId ? { ...t, status: nextStep } : t));
+
+    try {
+      await advanceTripStep(tripId, nextStep);
+    } catch (err) {
+      console.error("Trip advance error:", err);
     }
   };
 
@@ -117,16 +122,22 @@ export default function DriverDashboard() {
     e.preventDefault();
     if (!activeTrip) return;
 
-    await advanceTripStep(activeTrip.id, 'COMPLETED', {
-      deliveryProofUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&auto=format&fit=crop&q=80',
-      weighbridgeSlipNumber: proofForm.slipNumber || 'WB-TN-9921',
-      recipientSignatureName: proofForm.signatureName || 'Receiving Manager',
-      deliveryNotes: proofForm.notes || 'Batch inspected and accepted.'
-    });
-
+    const tripId = activeTrip.id;
+    // Instant optimistic update
     setActiveTrip({ ...activeTrip, status: 'COMPLETED' });
-    setTrips(prev => prev.map(t => t.id === activeTrip.id ? { ...t, status: 'COMPLETED' } : t));
+    setTrips(prev => prev.map(t => t.id === tripId ? { ...t, status: 'COMPLETED' } : t));
     setUploadProofModal(false);
+
+    try {
+      await advanceTripStep(tripId, 'COMPLETED', {
+        deliveryProofUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&auto=format&fit=crop&q=80',
+        weighbridgeSlipNumber: proofForm.slipNumber || 'WB-TN-9921',
+        recipientSignatureName: proofForm.signatureName || 'Receiving Manager',
+        deliveryNotes: proofForm.notes || 'Batch inspected and accepted.'
+      });
+    } catch (err) {
+      console.error("Save proof error:", err);
+    }
   };
 
   const completedTrips = trips.filter(t => t.status === 'COMPLETED');

@@ -121,6 +121,9 @@ export default function Dashboard() {
   const [categoryData, setCategoryData] = useState<{ name: string; value: number }[]>([]);
   const [modalMatchInfo, setModalMatchInfo] = useState<{ material: string; quantity: number; wasteId?: string } | null>(null);
 
+  // Preload valorization cache
+  const [cachedValorizationMap, setCachedValorizationMap] = useState<Record<string, AiAnalysisResult>>({});
+
   const fetchData = async () => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -172,13 +175,19 @@ export default function Dashboard() {
     if (cData.length === 0) cData.push({ name: 'No Data', value: 1 });
     setCategoryData(cData);
 
-    // Preload valorization for first waste item
-    if (w.length > 0) {
-      loadValorizationForWaste(w[0]);
+    // Background preload valorization for first waste item without blocking UI
+    if (w.length > 0 && !valorizationResult) {
+      setTimeout(() => {
+        loadValorizationForWaste(w[0]);
+      }, 50);
     }
   };
 
   const loadValorizationForWaste = async (waste: WasteMaterial) => {
+    if (cachedValorizationMap[waste.id]) {
+      setValorizationResult(cachedValorizationMap[waste.id]);
+      return;
+    }
     setLoadingValorization(true);
     try {
       const res = await analyzeWaste({
@@ -193,6 +202,7 @@ export default function Dashboard() {
         expectedPrice: waste.expected_price
       });
       setValorizationResult(res);
+      setCachedValorizationMap(prev => ({ ...prev, [waste.id]: res }));
     } catch {
       // Handled inside aiService fallback
     } finally {
@@ -206,12 +216,55 @@ export default function Dashboard() {
 
   const handleSendDealReply = async (dealId: string) => {
     if (!dealReplyMsg.trim()) return;
-    setIsSendingDealMsg(true);
-    await addDealMessage(dealId, dealReplyMsg.trim(), undefined, dealReplyPrice);
-    setIsSendingDealMsg(false);
+    const msgText = dealReplyMsg.trim();
+    const priceVal = dealReplyPrice;
     setDealReplyMsg("");
     setDealReplyPrice(undefined);
-    fetchData();
+
+    // Instant optimistic message update (0ms feedback)
+    const optimisticMsg: any = {
+      id: `temp-${Date.now()}`,
+      deal_id: dealId,
+      sender_id: 'current-user',
+      sender_name: 'You',
+      sender_role: 'seller',
+      message: msgText,
+      proposed_price: priceVal,
+      created_at: new Date().toISOString()
+    };
+
+    setDeals(prev => prev.map(d => {
+      if (d.id === dealId) {
+        const msgs = [...(d.messages || []), optimisticMsg];
+        const newPrice = priceVal && priceVal > 0 ? priceVal : d.agreed_price;
+        return {
+          ...d,
+          agreed_price: newPrice,
+          total_amount: d.agreed_quantity * newPrice,
+          messages: msgs
+        };
+      }
+      return d;
+    }));
+
+    if (selectedDealForModal && selectedDealForModal.id === dealId) {
+      setSelectedDealForModal(prev => {
+        if (!prev) return null;
+        const newPrice = priceVal && priceVal > 0 ? priceVal : prev.agreed_price;
+        return {
+          ...prev,
+          agreed_price: newPrice,
+          total_amount: prev.agreed_quantity * newPrice,
+          messages: [...(prev.messages || []), optimisticMsg]
+        };
+      });
+    }
+
+    try {
+      await addDealMessage(dealId, msgText, undefined, priceVal);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Calculated Real Metrics

@@ -1124,8 +1124,8 @@ export default function Home() {
                 </div>
                 <div>
                   <h4 className="font-bold text-gray-900 text-sm">Direct Support Email</h4>
-                  <a href="mailto:support@circulon.ai" className="text-xs font-semibold text-green-700 hover:underline mt-0.5 block">
-                    support@circulon.ai
+                  <a href="mailto:circulonsih@gmail.com" className="text-xs font-semibold text-green-700 hover:underline mt-0.5 block">
+                    circulonsih@gmail.com
                   </a>
                   <p className="text-[11px] text-gray-400 mt-0.5">Average turnaround under 2 hours</p>
                 </div>

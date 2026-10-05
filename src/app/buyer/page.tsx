@@ -263,13 +263,15 @@ export default function BuyerDashboard() {
     setDetailedReqs(prev => prev.filter(r => r.id !== id));
   };
 
-  // Bookmark / Save listing toggle
+  // Bookmark / Save listing toggle (Instant 0ms feedback)
   const handleToggleSave = async (listingId: string) => {
-    const res = await toggleSaveListing(listingId);
-    if (res.saved) {
-      setSavedListingIds(prev => [...prev, listingId]);
-    } else {
-      setSavedListingIds(prev => prev.filter(id => id !== listingId));
+    const isAlready = savedListingIds.includes(listingId);
+    setSavedListingIds(prev => isAlready ? prev.filter(id => id !== listingId) : [...prev, listingId]);
+    try {
+      await toggleSaveListing(listingId);
+    } catch {
+      // Revert on error
+      setSavedListingIds(prev => isAlready ? [...prev, listingId] : prev.filter(id => id !== listingId));
     }
   };
 
@@ -319,26 +321,70 @@ export default function BuyerDashboard() {
     }
   };
 
-  // Deal message / reply
+  // Deal message / reply (Instant 0ms optimistic append)
   const handleSendDealReply = async (dealId: string) => {
     if (!dealReplyMsg.trim()) return;
-    setIsSendingDealMsg(true);
-    await addDealMessage(dealId, dealReplyMsg.trim(), undefined, dealReplyPrice);
-    setIsSendingDealMsg(false);
+    const msgText = dealReplyMsg.trim();
+    const priceVal = dealReplyPrice;
     setDealReplyMsg("");
     setDealReplyPrice(undefined);
-    const refreshed = await getDeals("buyer");
-    setDeals(refreshed);
-    const d = refreshed.find(x => x.id === dealId);
-    if (d) setSelectedDealForModal(d);
+
+    const optimisticMsg: any = {
+      id: `temp-${Date.now()}`,
+      deal_id: dealId,
+      sender_id: 'current-user',
+      sender_name: 'You (Procurement)',
+      sender_role: 'buyer',
+      message: msgText,
+      proposed_price: priceVal,
+      created_at: new Date().toISOString()
+    };
+
+    setDeals(prev => prev.map(d => {
+      if (d.id === dealId) {
+        const msgs = [...(d.messages || []), optimisticMsg];
+        const newPrice = priceVal && priceVal > 0 ? priceVal : d.agreed_price;
+        return {
+          ...d,
+          agreed_price: newPrice,
+          total_amount: d.agreed_quantity * newPrice,
+          messages: msgs
+        };
+      }
+      return d;
+    }));
+
+    if (selectedDealForModal && selectedDealForModal.id === dealId) {
+      setSelectedDealForModal(prev => {
+        if (!prev) return null;
+        const newPrice = priceVal && priceVal > 0 ? priceVal : prev.agreed_price;
+        return {
+          ...prev,
+          agreed_price: newPrice,
+          total_amount: prev.agreed_quantity * newPrice,
+          messages: [...(prev.messages || []), optimisticMsg]
+        };
+      });
+    }
+
+    try {
+      await addDealMessage(dealId, msgText, undefined, priceVal);
+    } catch (err) {
+      console.error("Deal message error:", err);
+    }
   };
 
+  // Deal status updates (Instant 0ms optimistic status badge)
   const handleUpdateDealStatus = async (dealId: string, status: any) => {
-    await updateDealStatus(dealId, status);
-    const refreshed = await getDeals("buyer");
-    setDeals(refreshed);
-    const d = refreshed.find(x => x.id === dealId);
-    if (d) setSelectedDealForModal(d);
+    setDeals(prev => prev.map(d => d.id === dealId ? { ...d, status } : d));
+    if (selectedDealForModal && selectedDealForModal.id === dealId) {
+      setSelectedDealForModal(prev => prev ? { ...prev, status } : null);
+    }
+    try {
+      await updateDealStatus(dealId, status);
+    } catch (err) {
+      console.error("Update deal status error:", err);
+    }
   };
 
   // Handle incoming request action

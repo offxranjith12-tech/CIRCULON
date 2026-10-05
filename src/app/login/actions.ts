@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import { registerPendingCompany } from '@/lib/actions/admin'
 
 function isRedirectError(error: any) {
   return (
@@ -115,7 +116,7 @@ export async function login(formData: FormData) {
         const reason = profile.rejection_reason || 'Business documentation or address could not be verified'
         redirect(
           '/login?message=' +
-            encodeURIComponent(`Your company registration was not approved. Reason: ${reason}. Please contact support@circulon.ai.`) +
+            encodeURIComponent(`Your company registration was not approved. Reason: ${reason}. Please contact circulonsih@gmail.com.`) +
             '&type=error'
         )
       }
@@ -287,11 +288,25 @@ export async function signup(formData: FormData) {
         console.error('Error creating profile on signup:', profileErr)
       }
 
-      // 4. Revoke active session since approval by admin is required
+      // 4. Register in shared store for immediate live Admin visibility
+      await registerPendingCompany({
+        id: data.user.id,
+        company_name: companyName,
+        email: email,
+        role: role as any,
+        company_address: companyAddress,
+        id_proof_number: idProofNumber,
+        id_proof_url: idProofUrl,
+        material_focus: materialFocus,
+        industry: industry || materialFocus,
+      });
+
+      // 5. Revoke active session since approval by admin is required
       await supabase.auth.signOut()
     }
 
     revalidatePath('/', 'layout')
+    revalidatePath('/admin')
     redirect(
       '/login?message=' +
         encodeURIComponent(

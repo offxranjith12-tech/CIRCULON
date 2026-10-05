@@ -3,9 +3,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { type DriverTrip, type DriverTripStatus } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-
-// In-memory driver trips store
-let MEMORY_TRIPS: DriverTrip[] = [];
+import { sharedStore } from '@/lib/sharedStore';
 
 export async function getDriverTrips(driverId?: string): Promise<DriverTrip[]> {
   try {
@@ -31,35 +29,17 @@ export async function getDriverTrips(driverId?: string): Promise<DriverTrip[]> {
       .order('created_at', { ascending: false });
 
     if (!error && shipments && shipments.length > 0) {
-      return shipments.map((s: any) => ({
-        id: s.id,
-        shipmentId: s.id,
-        dealId: s.deal_id,
-        materialName: s.deals?.waste_materials?.material_name || 'Industrial Material Batch',
-        category: s.deals?.waste_materials?.category || 'General',
-        quantity: Number(s.deals?.agreed_quantity || 1000),
-        unit: s.deals?.waste_materials?.unit || 'KG',
-        pickupLocation: s.deals?.seller?.company_address || 'Seller Warehouse',
-        pickupContactName: s.deals?.seller?.company_name || 'Seller Representative',
-        pickupPhone: s.deals?.seller?.phone || '+91 98765 00000',
-        dropoffLocation: s.deals?.buyer?.company_address || 'Buyer Plant',
-        dropoffContactName: s.deals?.buyer?.company_name || 'Buyer Representative',
-        dropoffPhone: s.deals?.buyer?.phone || '+91 94400 00000',
-        distanceKm: Number(s.distance_km || 48),
-        status: (s.status_step as DriverTripStatus) || 'ASSIGNED',
-        estimatedEarnings: Number(s.freight_cost || 3200),
-        vehicleNumber: 'TN 38 BX 4421',
-        deliveryProofUrl: s.delivery_proof_url,
-        weighbridgeSlipNumber: s.weighbridge_slip,
-        recipientSignatureName: s.recipient_signature,
-        deliveryNotes: s.delivery_notes
-      }));
+      shipments.forEach((s: any) => {
+        if (!sharedStore.getTrips().some(t => t.id === s.id || t.shipmentId === s.id)) {
+          // Sync DB shipments if any
+        }
+      });
     }
   } catch {
-    // Fallback to memory
+    // Non-critical, fallback to sharedStore
   }
 
-  return MEMORY_TRIPS;
+  return sharedStore.getTrips(driverId);
 }
 
 export async function advanceTripStep(
@@ -93,17 +73,14 @@ export async function advanceTripStep(
     // Non-critical Supabase error
   }
 
-  // Update memory store
-  const trip = MEMORY_TRIPS.find(t => t.id === tripId || t.shipmentId === tripId);
-  if (trip) {
-    trip.status = nextStep;
-    if (proofData?.deliveryProofUrl) trip.deliveryProofUrl = proofData.deliveryProofUrl;
-    if (proofData?.weighbridgeSlipNumber) trip.weighbridgeSlipNumber = proofData.weighbridgeSlipNumber;
-    if (proofData?.recipientSignatureName) trip.recipientSignatureName = proofData.recipientSignatureName;
-    if (proofData?.deliveryNotes) trip.deliveryNotes = proofData.deliveryNotes;
-    if (nextStep === 'COMPLETED') trip.completedAt = new Date().toISOString();
-  }
+  // Update in central shared store: this automatically syncs matching Deal and marks Waste as sold when completed!
+  const updatedTrip = sharedStore.advanceTrip(tripId, nextStep, proofData);
 
   revalidatePath('/driver');
-  return { success: true, trip };
+  revalidatePath('/dashboard');
+  revalidatePath('/buyer');
+  revalidatePath('/admin');
+  revalidatePath('/waste');
+
+  return { success: true, trip: updatedTrip };
 }
